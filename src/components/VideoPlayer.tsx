@@ -32,6 +32,7 @@ export const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showUnmuteHint, setShowUnmuteHint] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export const VideoPlayer = ({
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+      setShowUnmuteHint(false);
     }
   };
 
@@ -80,10 +82,20 @@ export const VideoPlayer = ({
         variant="ghost"
         size="icon"
         onClick={toggleMute}
-        className="absolute bottom-20 right-4 bg-black/50 hover:bg-black/70"
+        className="absolute bottom-20 right-4 bg-black/50 hover:bg-black/70 transition-all"
       >
-        {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+        {isMuted ? <VolumeX className="h-6 w-6 text-red-400" /> : <Volume2 className="h-6 w-6 text-green-400" />}
       </Button>
+
+      {/* Unmute Hint */}
+      {isMuted && showUnmuteHint && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="bg-black/80 text-white px-6 py-3 rounded-lg flex items-center gap-2 animate-pulse">
+            <VolumeX className="h-5 w-5" />
+            <span className="text-sm">Trykk for å skru på lyd</span>
+          </div>
+        </div>
+      )}
 
       {/* Video Info */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
