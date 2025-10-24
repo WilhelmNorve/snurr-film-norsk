@@ -30,9 +30,9 @@ export const VideoPlayer = ({
   onShare,
   onBookmark,
 }: VideoPlayerProps) => {
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showUnmuteHint, setShowUnmuteHint] = useState(true);
+  const [showUnmuteHint, setShowUnmuteHint] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
