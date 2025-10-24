@@ -62,7 +62,7 @@ const Feed = () => {
   };
 
   return (
-    <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+    <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide pb-16 md:pb-0 md:pl-20">
       <Navigation />
       {videos.map((video) => (
         <VideoPlayer
