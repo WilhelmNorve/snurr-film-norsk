@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Settings, Grid, Bookmark, Heart, LogOut } from "lucide-react";
+import { Settings, Grid, Bookmark, Heart, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,13 +9,24 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Redirect to auth if not logged in
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
   const handleSignOut = async () => {
-    await signOut();
-    toast.success("Du er nå logget ut");
-    navigate("/auth");
+    try {
+      await signOut();
+      toast.success("Du er nå logget ut");
+      navigate("/auth");
+    } catch (error) {
+      toast.error("Kunne ikke logge ut");
+    }
   };
 
   const userStats = {
@@ -25,21 +36,41 @@ const Profile = () => {
     videos: 87,
   };
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center font-bold text-3xl mx-auto mb-4 animate-pulse">
+            T
+          </div>
+          <p className="text-muted-foreground">Laster profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0 md:pl-20">
       <Navigation />
       
       <main className="container max-w-4xl mx-auto px-4 py-6">
-        <div className="flex justify-between mb-6">
+        <div className="flex justify-between items-center mb-6">
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>
-          {user && (
-            <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Logg ut
-            </Button>
-          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleSignOut} 
+            className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Logg ut
+          </Button>
         </div>
 
         <div className="flex flex-col items-center mb-8">
