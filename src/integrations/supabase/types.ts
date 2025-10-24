@@ -61,7 +61,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_test_users: {
+        Args: never
+        Returns: {
+          email: string
+          success: boolean
+          username: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
