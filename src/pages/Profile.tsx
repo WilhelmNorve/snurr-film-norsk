@@ -1,10 +1,23 @@
+import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Settings, Grid, Bookmark, Heart } from "lucide-react";
+import { Settings, Grid, Bookmark, Heart, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Profile = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Du er nå logget ut");
+    navigate("/auth");
+  };
+
   const userStats = {
     followers: 15200,
     following: 432,
@@ -17,10 +30,16 @@ const Profile = () => {
       <Navigation />
       
       <main className="container max-w-4xl mx-auto px-4 py-6">
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-between mb-6">
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>
+          {user && (
+            <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Logg ut
+            </Button>
+          )}
         </div>
 
         <div className="flex flex-col items-center mb-8">
@@ -29,8 +48,12 @@ const Profile = () => {
             <AvatarFallback>BN</AvatarFallback>
           </Avatar>
           
-          <h1 className="text-2xl font-bold mb-1">@brukernavn</h1>
-          <p className="text-muted-foreground mb-4">Oslo, Norge 🇳🇴</p>
+          <h1 className="text-2xl font-bold mb-1">
+            @{user?.user_metadata?.username || "brukernavn"}
+          </h1>
+          <p className="text-muted-foreground mb-4">
+            {user?.email || "Oslo, Norge 🇳🇴"}
+          </p>
 
           <div className="flex gap-8 mb-6">
             <div className="text-center">
