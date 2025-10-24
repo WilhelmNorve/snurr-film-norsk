@@ -82,7 +82,7 @@ export const VideoPlayer = ({
         variant="ghost"
         size="icon"
         onClick={toggleMute}
-        className="absolute bottom-20 right-4 bg-black/50 hover:bg-black/70 transition-all"
+        className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 transition-all z-10"
       >
         {isMuted ? <VolumeX className="h-6 w-6 text-red-400" /> : <Volume2 className="h-6 w-6 text-green-400" />}
       </Button>
