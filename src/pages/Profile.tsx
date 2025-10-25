@@ -269,15 +269,15 @@ const Profile = () => {
           <TabsList className="grid w-full grid-cols-3 bg-secondary">
             <TabsTrigger value="videos" className="gap-2">
               <Grid className="h-4 w-4" />
-              Videoer
+              Videoer ({userVideos.length})
             </TabsTrigger>
             <TabsTrigger value="liked" className="gap-2">
               <Heart className="h-4 w-4" />
-              Likte
+              Likte ({likedVideos.length})
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-2">
               <Bookmark className="h-4 w-4" />
-              Lagret
+              Lagret ({bookmarkedVideos.length})
             </TabsTrigger>
           </TabsList>
 
