@@ -104,8 +104,12 @@ export const VideoPlayer = ({
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
         <div className="max-w-md">
           <div className="flex items-center gap-2 mb-2">
-            <Avatar className="h-14 w-14 border-2 border-white p-0.5 bg-white">
-              <AvatarImage src={avatarUrl} alt={username} className="object-cover scale-90" />
+            <Avatar className="h-14 w-14 border-2 border-white">
+              <AvatarImage 
+                src={avatarUrl} 
+                alt={username} 
+                className="object-cover scale-75 object-center"
+              />
               <AvatarFallback className="bg-primary text-primary-foreground">
                 {username.charAt(0).toUpperCase()}
               </AvatarFallback>
