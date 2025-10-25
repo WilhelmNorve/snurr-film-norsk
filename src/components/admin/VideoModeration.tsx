@@ -83,10 +83,9 @@ export const VideoModeration = () => {
 
   const toggleVideoStatus = async (videoId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('videos')
-        .update({ is_active: !currentStatus })
-        .eq('id', videoId);
+      const { data, error } = await (supabase.rpc as any)('toggle_video_status', {
+        _video_id: videoId
+      });
 
       if (error) throw error;
 
