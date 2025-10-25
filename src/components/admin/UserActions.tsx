@@ -254,7 +254,7 @@ export const UserActions = () => {
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={action.is_active ? "default" : "secondary"}
+                      variant={action.is_active ? "destructive" : "default"}
                       className="cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => toggleActionStatus(action.id, action.is_active)}
                     >
