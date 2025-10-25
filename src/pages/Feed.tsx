@@ -14,6 +14,7 @@ const mockVideos = [
     likes: 12500,
     comments: 342,
     followersCount: 15200,
+    userId: undefined,
     isLiked: false,
     isBookmarked: false,
   },
@@ -313,7 +314,8 @@ const Feed = () => {
           comments_count,
           views_count,
           created_at,
-          profiles:user_id (username, avatar_url, followers_count)
+          user_id,
+          profiles:user_id (username, avatar_url, followers_count, id)
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
@@ -359,10 +361,11 @@ const Feed = () => {
       likes: video.likes_count || 0,
       comments: video.comments_count || 0,
       followersCount: video.profiles?.followers_count || 0,
+      userId: video.profiles?.id || video.user_id,
       isLiked: false,
       isBookmarked: false,
     })),
-    ...videos
+    ...videos.map(v => ({ ...v, userId: undefined as string | undefined }))
   ];
 
   return (
@@ -384,6 +387,8 @@ const Feed = () => {
             likes={video.likes}
             comments={video.comments}
             followersCount={followersCount}
+            videoId={video.id}
+            userId={video.userId}
             isLiked={video.isLiked}
             isBookmarked={video.isBookmarked}
             onLike={() => handleLike(video.id)}

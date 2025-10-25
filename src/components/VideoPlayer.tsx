@@ -1,9 +1,27 @@
 import { useState, useRef, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX, Flag, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { VerificationBadge } from "@/components/VerificationBadge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -15,6 +33,8 @@ interface VideoPlayerProps {
   isLiked?: boolean;
   isBookmarked?: boolean;
   followersCount?: number;
+  videoId?: string;
+  userId?: string;
   onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
@@ -31,6 +51,8 @@ export const VideoPlayer = ({
   isLiked = false,
   isBookmarked = false,
   followersCount = 0,
+  videoId,
+  userId,
   onLike,
   onComment,
   onShare,
@@ -39,7 +61,11 @@ export const VideoPlayer = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showUnmuteHint, setShowUnmuteHint] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportType, setReportType] = useState<'video' | 'user'>('video');
+  const [reportReason, setReportReason] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -72,6 +98,54 @@ export const VideoPlayer = ({
     }
   };
 
+  const handleReport = async () => {
+    if (!user) {
+      toast.error("Du må være logget inn for å rapportere");
+      return;
+    }
+
+    if (!reportReason.trim()) {
+      toast.error("Vennligst fyll ut en grunn for rapporten");
+      return;
+    }
+
+    try {
+      if (reportType === 'video' && videoId) {
+        const { error } = await supabase
+          .from('video_reports')
+          .insert({
+            video_id: videoId,
+            reporter_id: user.id,
+            reason: reportReason.trim(),
+          });
+
+        if (error) throw error;
+        toast.success("Video rapportert");
+      } else if (reportType === 'user' && userId) {
+        const { error } = await supabase
+          .from('user_reports')
+          .insert({
+            reported_user_id: userId,
+            reporter_id: user.id,
+            reason: reportReason.trim(),
+          });
+
+        if (error) throw error;
+        toast.success("Bruker rapportert");
+      }
+
+      setReportDialogOpen(false);
+      setReportReason("");
+    } catch (error: any) {
+      console.error('Report error:', error);
+      if (error.code === '23505') {
+        toast.error("Du har allerede rapportert dette");
+      } else {
+        toast.error("Kunne ikke sende rapport");
+      }
+    }
+  };
+
   return (
     <div className="relative h-screen snap-start snap-always bg-black">
       <video
@@ -92,6 +166,41 @@ export const VideoPlayer = ({
       >
         {isMuted ? <VolumeX className="h-6 w-6 text-red-400" /> : <Volume2 className="h-6 w-6 text-green-400" />}
       </Button>
+
+      {/* More Options */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-16 bg-black/50 hover:bg-black/70 transition-all z-10"
+          >
+            <MoreVertical className="h-6 w-6" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-background">
+          <DropdownMenuItem 
+            onClick={() => {
+              setReportType('video');
+              setReportDialogOpen(true);
+            }}
+            className="gap-2 cursor-pointer"
+          >
+            <Flag className="h-4 w-4" />
+            Rapporter video
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => {
+              setReportType('user');
+              setReportDialogOpen(true);
+            }}
+            className="gap-2 cursor-pointer"
+          >
+            <Flag className="h-4 w-4" />
+            Rapporter bruker
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Unmute Hint */}
       {isMuted && showUnmuteHint && (
@@ -173,6 +282,44 @@ export const VideoPlayer = ({
           <Share2 className="h-7 w-7" />
         </Button>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="bg-background">
+          <DialogHeader>
+            <DialogTitle>
+              Rapporter {reportType === 'video' ? 'video' : 'bruker'}
+            </DialogTitle>
+            <DialogDescription>
+              {reportType === 'video' 
+                ? 'Beskriv hvorfor denne videoen bryter retningslinjene'
+                : `Beskriv hvorfor @${username} bryter retningslinjene`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              placeholder="Skriv grunnen for rapporten..."
+              className="min-h-[120px]"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground">
+              Rapporten blir sendt til administratorer for gjennomgang.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button onClick={handleReport} variant="destructive">
+              <Flag className="h-4 w-4 mr-2" />
+              Send rapport
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
