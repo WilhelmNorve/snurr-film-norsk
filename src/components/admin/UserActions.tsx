@@ -32,6 +32,7 @@ interface UserAction {
   duration_days: number | null;
   created_at: string;
   is_active: boolean;
+  expires_at: string | null;
 }
 
 interface User {
@@ -47,7 +48,7 @@ export const UserActions = () => {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [actionType, setActionType] = useState("warn");
   const [reason, setReason] = useState("");
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState("permanent");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export const UserActions = () => {
             duration_days,
             created_at,
             is_active,
+            expires_at,
             profiles:user_id (username)
           `)
           .order('created_at', { ascending: false }),
@@ -78,15 +80,19 @@ export const UserActions = () => {
       if (actionsRes.error) throw actionsRes.error;
       if (usersRes.error) throw usersRes.error;
 
-      const formattedActions = actionsRes.data?.map((action: any) => ({
-        id: action.id,
-        username: action.profiles?.username || 'Ukjent',
-        action_type: action.action_type,
-        reason: action.reason,
-        duration_days: action.duration_days,
-        created_at: action.created_at,
-        is_active: action.is_active,
-      })) || [];
+      const formattedActions = actionsRes.data?.map((action: any) => {
+        const isExpired = action.expires_at && new Date(action.expires_at) < new Date();
+        return {
+          id: action.id,
+          username: action.profiles?.username || 'Ukjent',
+          action_type: action.action_type,
+          reason: action.reason,
+          duration_days: action.duration_days,
+          created_at: action.created_at,
+          is_active: isExpired ? false : action.is_active,
+          expires_at: action.expires_at,
+        };
+      }) || [];
 
       setActions(formattedActions);
       setUsers(usersRes.data || []);
@@ -116,10 +122,14 @@ export const UserActions = () => {
       const { data: adminData } = await supabase.auth.getUser();
       if (!adminData.user) throw new Error("Ikke autentisert");
 
-      const durationDays = duration ? parseInt(duration) : null;
-      const expiresAt = durationDays 
-        ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+      let durationDays = null;
+      let expiresAt = null;
+      
+      if (duration && duration !== 'permanent') {
+        const weeks = parseInt(duration);
+        durationDays = weeks * 7;
+        expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+      }
 
       const { error } = await supabase
         .from('user_actions')
@@ -142,7 +152,7 @@ export const UserActions = () => {
       setDialogOpen(false);
       setSelectedUserId("");
       setReason("");
-      setDuration("");
+      setDuration("permanent");
       fetchData();
     } catch (error) {
       console.error('Error creating user action:', error);
@@ -251,7 +261,9 @@ export const UserActions = () => {
                   <TableCell>{getActionBadge(action.action_type)}</TableCell>
                   <TableCell className="max-w-xs truncate">{action.reason}</TableCell>
                   <TableCell>
-                    {action.duration_days ? `${action.duration_days} dager` : 'Permanent'}
+                    {action.duration_days 
+                      ? `${Math.round(action.duration_days / 7)} ${Math.round(action.duration_days / 7) === 1 ? 'uke' : 'uker'}` 
+                      : 'Permanent'}
                   </TableCell>
                   <TableCell>
                     <Badge 
@@ -322,13 +334,20 @@ export const UserActions = () => {
             </div>
             {(actionType === 'suspend' || actionType === 'ban') && (
               <div>
-                <label className="text-sm font-medium mb-2 block">Varighet (dager):</label>
-                <Input
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  placeholder="La stå tom for permanent"
-                />
+                <label className="text-sm font-medium mb-2 block">Varighet:</label>
+                <Select value={duration} onValueChange={setDuration}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg varighet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="permanent">Permanent</SelectItem>
+                    <SelectItem value="1">1 uke</SelectItem>
+                    <SelectItem value="2">2 uker</SelectItem>
+                    <SelectItem value="4">4 uker</SelectItem>
+                    <SelectItem value="8">8 uker</SelectItem>
+                    <SelectItem value="12">12 uker</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
