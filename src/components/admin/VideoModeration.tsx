@@ -178,11 +178,11 @@ export const VideoModeration = () => {
                         <Badge variant="destructive">Flagget</Badge>
                       )}
                       <Badge 
-                        variant={video.is_active ? "default" : "destructive"}
+                        variant={video.is_active ? "default" : "secondary"}
                         className={`cursor-pointer transition-colors ${
                           video.is_active 
                             ? "bg-green-600 hover:bg-green-700 text-white" 
-                            : "bg-red-600 hover:bg-red-700 text-white"
+                            : "bg-gray-500 hover:bg-gray-600 text-white"
                         }`}
                         onClick={() => toggleVideoStatus(video.id, video.is_active)}
                       >
