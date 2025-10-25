@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield, User, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { VerificationBadge } from "@/components/VerificationBadge";
 
 interface UserData {
   id: string;
@@ -259,7 +260,10 @@ export const UserManagement = () => {
                         <AvatarFallback>{user.display_name[0]}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{user.display_name}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          {user.display_name}
+                          <VerificationBadge followersCount={user.followers_count} size="sm" />
+                        </div>
                         {user.bio && (
                           <div className="text-xs text-muted-foreground max-w-xs truncate">
                             {user.bio}
