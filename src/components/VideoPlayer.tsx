@@ -104,14 +104,12 @@ export const VideoPlayer = ({
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
         <div className="max-w-md">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-14 w-14 rounded-full border-2 border-white overflow-hidden p-1.5 bg-background">
-              <div className="h-full w-full rounded-full overflow-hidden">
-                <img 
-                  src={avatarUrl} 
-                  alt={username}
-                  className="h-full w-full object-cover"
-                />
-              </div>
+            <div className="h-14 w-14 rounded-full border-2 border-white overflow-hidden">
+              <img 
+                src={avatarUrl} 
+                alt={username}
+                className="h-full w-full object-cover"
+              />
             </div>
             <h3 className="font-bold text-lg">@{username}</h3>
           </div>
