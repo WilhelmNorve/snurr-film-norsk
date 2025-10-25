@@ -2,3 +2,6 @@ project_id = "olrrzcpccoqqczjcfohh"
 
 [functions.create-test-users]
 verify_jwt = false
+
+[functions.generate-profile-avatars]
+verify_jwt = false

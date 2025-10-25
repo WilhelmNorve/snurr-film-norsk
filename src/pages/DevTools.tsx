@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, CheckCircle2, XCircle } from "lucide-react";
+import { Users, CheckCircle2, XCircle, ImagePlus } from "lucide-react";
 
 const DevTools = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+  const [isGeneratingAvatars, setIsGeneratingAvatars] = useState(false);
+  const [avatarResults, setAvatarResults] = useState<any[]>([]);
 
   const createTestUsers = async () => {
     setIsCreating(true);
@@ -41,6 +43,41 @@ const DevTools = () => {
       toast.error('En feil oppstod');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const generateAvatars = async () => {
+    setIsGeneratingAvatars(true);
+    setAvatarResults([]);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-profile-avatars', {
+        body: {}
+      });
+
+      if (error) {
+        console.error('Error calling function:', error);
+        toast.error(`Feil ved generering av avatarer: ${error.message}`);
+        return;
+      }
+
+      console.log('Function response:', data);
+      setAvatarResults(data.results || []);
+      
+      const successCount = data.results?.filter((r: any) => r.success).length || 0;
+      const failCount = data.results?.filter((r: any) => !r.success).length || 0;
+      
+      if (successCount > 0) {
+        toast.success(`${successCount} avatarer generert!`);
+      }
+      if (failCount > 0) {
+        toast.error(`${failCount} avatarer feilet`);
+      }
+    } catch (err) {
+      console.error('Exception:', err);
+      toast.error('En feil oppstod');
+    } finally {
+      setIsGeneratingAvatars(false);
     }
   };
 
@@ -84,6 +121,59 @@ const DevTools = () => {
             </div>
           </div>
         </Card>
+
+        <Card className="p-6 mb-6 bg-card border-border">
+          <div className="flex items-start gap-4">
+            <ImagePlus className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold mb-2">Generer AI-profilbilder</h2>
+              <p className="text-muted-foreground mb-4">
+                Genererer unike AI-baserte profilbilder for alle brukere uten avatar eller med placeholder-avatarer.
+              </p>
+
+              <Button
+                onClick={generateAvatars}
+                disabled={isGeneratingAvatars}
+                className="bg-gradient-primary hover:opacity-90 transition-opacity"
+              >
+                {isGeneratingAvatars ? "Genererer avatarer..." : "Generer AI-avatarer"}
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {avatarResults.length > 0 && (
+          <Card className="p-6 mb-6 bg-card border-border">
+            <h3 className="text-lg font-semibold mb-4">Avatar Resultater</h3>
+            <div className="space-y-2">
+              {avatarResults.map((result, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-secondary"
+                >
+                  {result.success ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium">@{result.username}</p>
+                    {!result.success && result.error && (
+                      <p className="text-sm text-muted-foreground">{result.error}</p>
+                    )}
+                  </div>
+                  {result.success && result.avatarUrl && (
+                    <img 
+                      src={result.avatarUrl} 
+                      alt={result.username} 
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {results.length > 0 && (
           <Card className="p-6 bg-card border-border">
