@@ -40,6 +40,7 @@ interface VideoPlayerProps {
   onComment?: () => void;
   onShare?: () => void;
   onBookmark?: () => void;
+  disableBookmark?: boolean;
 }
 
 export const VideoPlayer = ({
@@ -58,6 +59,7 @@ export const VideoPlayer = ({
   onComment,
   onShare,
   onBookmark,
+  disableBookmark = false,
 }: VideoPlayerProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -288,6 +290,10 @@ export const VideoPlayer = ({
           variant="ghost"
           size="icon"
           onClick={() => {
+            if (disableBookmark) {
+              toast.info("Kan ikke lagre demo-videoer");
+              return;
+            }
             setLocalIsBookmarked(!localIsBookmarked);
             onBookmark?.();
           }}

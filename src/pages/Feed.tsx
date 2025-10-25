@@ -409,11 +409,12 @@ const Feed = () => {
     try {
       if (isBookmarked) {
         // Remove bookmark
-        await supabase
+        const { error } = await supabase
           .from('bookmarks')
           .delete()
           .eq('video_id', videoId)
           .eq('user_id', user.id);
+        if (error) throw error;
         
         setUserBookmarks(prev => {
           const newSet = new Set(prev);
@@ -423,9 +424,10 @@ const Feed = () => {
         toast.success("Fjernet fra lagrede");
       } else {
         // Add bookmark
-        await supabase
+        const { error } = await supabase
           .from('bookmarks')
           .insert({ video_id: videoId, user_id: user.id });
+        if (error) throw error;
         
         setUserBookmarks(prev => new Set(prev).add(videoId));
         toast.success("Lagret!");
@@ -503,6 +505,7 @@ const Feed = () => {
             userId={video.userId}
             isLiked={video.isLiked}
             isBookmarked={video.isBookmarked}
+            disableBookmark={!video.userId}
             onLike={() => handleLike(video.id)}
             onBookmark={() => handleBookmark(video.id)}
             onComment={() => console.log("Comment on", video.id)}
