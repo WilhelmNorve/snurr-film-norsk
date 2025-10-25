@@ -227,8 +227,35 @@ const mockVideos = [
   },
 ];
 
-// No longer needed - we use database profiles directly
-const AVATAR_OVERRIDES: Record<string, string> = {};
+// Map usernames to their avatar URLs (both from database and local files)
+const AVATAR_OVERRIDES: Record<string, string> = {
+  // Users in database - use Supabase storage URLs
+  naturelsker: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/47a36997-56e2-41ab-809f-8280a3453a1a/avatar.png",
+  nordlysguide: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/f431277e-7996-4b46-8e9a-3cb1368c46c4/avatar.png",
+  oslovibes: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/7dd03926-94bb-4159-a22d-068d4c925bb8/avatar.png",
+  bergenskok: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/2d56023b-d217-40ba-8f0a-5a40c9399d87/avatar.png",
+  fjellvandrer: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/cf22ade8-4f9a-460e-ab01-4a94a3bdc43c/avatar.png",
+  kunstneren: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/e61973f7-51e3-4290-bd85-fed7efc1cdba/avatar.png",
+  skatepro: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/b090faa6-5fb1-42f1-8195-d7db6e78258e/avatar.png",
+  trondheimstudie: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/27a0694b-b961-47aa-a03e-4be4d9c4b152/avatar.png",
+  fotballkjempe: "https://olrrzcpccoqqczjcfohh.supabase.co/storage/v1/object/public/avatars/751de1e0-3597-4c47-8f02-d7a63995fccb/avatar.png",
+  
+  // Fictional users - use local generated images
+  partypeople: "/avatars/partypeople.png",
+  solnedgang: "/avatars/solnedgang.png",
+  skaternorge: "/avatars/skaternorge.png",
+  kaffeguide: "/avatars/kaffeguide.png",
+  bokelsker: "/avatars/bokelsker.png",
+  byfotograf: "/avatars/byfotograf.png",
+  treningsglede: "/avatars/treningsglede.png",
+  yogalivet: "/avatars/yogalivet.png",
+  matglede: "/avatars/matglede.png",
+  kunstner_no: "/avatars/kunstner_no.png",
+  gitargutten: "/avatars/gitargutten.png",
+  regndager: "/avatars/regndager.png",
+  hundeliv: "/avatars/hundeliv.png",
+  fyrverkeri: "/avatars/fyrverkeri.png",
+};
 
 const Feed = () => {
   const [videos, setVideos] = useState(mockVideos);
