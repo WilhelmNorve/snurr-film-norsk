@@ -20,6 +20,7 @@ interface UserData {
   videos_count: number;
   created_at: string;
   roles: string[];
+  is_active: boolean;
 }
 
 type SortField = 'display_name' | 'username' | 'followers_count' | 'following_count' | 'videos_count' | 'likes_count' | 'created_at';
@@ -73,6 +74,7 @@ export const UserManagement = () => {
         videos_count: profile.videos_count || 0,
         created_at: profile.created_at,
         roles: rolesMap.get(profile.id) || ['user'],
+        is_active: profile.is_active !== false,
       })) || [];
 
       setUsers(formattedUsers);
@@ -85,6 +87,25 @@ export const UserManagement = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
+    try {
+      const { data, error } = await (supabase.rpc as any)('toggle_user_status', {
+        _user_id: userId
+      });
+
+      if (error) throw error;
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      toast({
+        variant: "destructive",
+        title: "Feil",
+        description: "Kunne ikke endre brukerstatus",
+      });
     }
   };
 
@@ -107,6 +128,12 @@ export const UserManagement = () => {
   };
 
   const sortedUsers = [...users].sort((a, b) => {
+    // First sort by is_active (active users first)
+    if (a.is_active !== b.is_active) {
+      return a.is_active ? -1 : 1;
+    }
+
+    // Then sort by the selected field
     let aValue = a[sortField];
     let bValue = b[sortField];
 
@@ -170,6 +197,7 @@ export const UserManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Status</TableHead>
               <TableHead>
                 <Button 
                   variant="ghost" 
@@ -246,13 +274,26 @@ export const UserManagement = () => {
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell colSpan={9} className="text-center text-muted-foreground">
                   Ingen brukere funnet
                 </TableCell>
               </TableRow>
             ) : (
               sortedUsers.map((user) => (
                 <TableRow key={user.id}>
+                  <TableCell>
+                    <Badge 
+                      variant={user.is_active ? "default" : "secondary"}
+                      className={`cursor-pointer transition-colors ${
+                        user.is_active 
+                          ? "bg-green-600 hover:bg-green-700 text-white" 
+                          : "bg-gray-500 hover:bg-gray-600 text-white"
+                      }`}
+                      onClick={() => toggleUserStatus(user.id, user.is_active)}
+                    >
+                      {user.is_active ? "Aktiv" : "Inaktiv"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">

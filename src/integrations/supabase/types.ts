@@ -121,6 +121,7 @@ export type Database = {
           following_count: number | null
           gender: string | null
           id: string
+          is_active: boolean
           likes_count: number | null
           location: string | null
           nationality: string | null
@@ -140,6 +141,7 @@ export type Database = {
           following_count?: number | null
           gender?: string | null
           id: string
+          is_active?: boolean
           likes_count?: number | null
           location?: string | null
           nationality?: string | null
@@ -159,6 +161,7 @@ export type Database = {
           following_count?: number | null
           gender?: string | null
           id?: string
+          is_active?: boolean
           likes_count?: number | null
           location?: string | null
           nationality?: string | null
@@ -467,6 +470,13 @@ export type Database = {
         Returns: boolean
       }
       increment_video_views: { Args: { _video_id: string }; Returns: undefined }
+      toggle_user_status: {
+        Args: { _user_id: string }
+        Returns: {
+          id: string
+          is_active: boolean
+        }[]
+      }
       toggle_video_status: {
         Args: { _video_id: string }
         Returns: {
