@@ -89,13 +89,6 @@ export const VideoModeration = () => {
 
       if (error) throw error;
 
-      toast({
-        title: currentStatus ? "Video skjult" : "Video aktivert",
-        description: currentStatus 
-          ? "Videoen er nå skjult for brukere" 
-          : "Videoen er nå synlig for brukere",
-      });
-
       fetchVideos();
     } catch (error) {
       console.error('Error toggling video status:', error);
