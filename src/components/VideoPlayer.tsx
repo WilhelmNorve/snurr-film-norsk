@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX } from "lucide
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { VerificationBadge } from "@/components/VerificationBadge";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -13,6 +14,7 @@ interface VideoPlayerProps {
   avatarUrl?: string;
   isLiked?: boolean;
   isBookmarked?: boolean;
+  followersCount?: number;
   onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
@@ -28,6 +30,7 @@ export const VideoPlayer = ({
   avatarUrl,
   isLiked = false,
   isBookmarked = false,
+  followersCount = 0,
   onLike,
   onComment,
   onShare,
@@ -111,7 +114,10 @@ export const VideoPlayer = ({
                 className="h-full w-full object-cover object-top"
               />
             </div>
-            <h3 className="font-bold text-lg">@{username}</h3>
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              @{username}
+              <VerificationBadge followersCount={followersCount} size="sm" />
+            </h3>
           </div>
           <p className="text-sm text-foreground/90">{description}</p>
         </div>
