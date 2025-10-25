@@ -12,6 +12,7 @@ import { VideoModeration } from "@/components/admin/VideoModeration";
 import { ReportManagement } from "@/components/admin/ReportManagement";
 import { UserActions } from "@/components/admin/UserActions";
 import { PlatformSettings } from "@/components/admin/PlatformSettings";
+import { UserManagement } from "@/components/admin/UserManagement";
 
 interface StatsData {
   totalUsers: number;
@@ -92,10 +93,14 @@ const Admin = () => {
             <AdminStats stats={stats} />
             
             <Tabs defaultValue="videos" className="mt-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="videos" className="flex items-center gap-2">
                   <Video className="h-4 w-4" />
                   Videoer
+                </TabsTrigger>
+                <TabsTrigger value="users" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Brukere
                 </TabsTrigger>
                 <TabsTrigger value="reports" className="flex items-center gap-2">
                   <Flag className="h-4 w-4" />
@@ -113,6 +118,10 @@ const Admin = () => {
 
               <TabsContent value="videos" className="mt-6">
                 <VideoModeration />
+              </TabsContent>
+
+              <TabsContent value="users" className="mt-6">
+                <UserManagement />
               </TabsContent>
 
               <TabsContent value="reports" className="mt-6">
