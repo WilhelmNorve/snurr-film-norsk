@@ -225,7 +225,15 @@ const mockVideos = [
     isLiked: false,
     isBookmarked: false,
   },
-];
+]; 
+
+const AVATAR_OVERRIDES: Record<string, string> = {
+  naturelsker: "/avatars/user1.png",
+  nordlysguide: "/avatars/user2.png",
+  oslovibes: "/avatars/user3.png",
+  bergenskok: "/avatars/user4.png",
+  fjellvandrer: "/avatars/user5.png",
+};
 
 const Feed = () => {
   const [videos, setVideos] = useState(mockVideos);
@@ -276,7 +284,8 @@ const Feed = () => {
       <Navigation />
       {videos.map((video) => {
         const profile = profiles[video.username];
-        const avatarUrl = profile?.avatar_url || video.avatarUrl;
+        const override = AVATAR_OVERRIDES[video.username];
+        const avatarUrl = override || profile?.avatar_url || video.avatarUrl;
         
         return (
           <VideoPlayer
