@@ -59,49 +59,43 @@ const Profile = () => {
       if (!user) return;
 
       // Fetch bookmarked videos
-      const { data: bookmarks } = await supabase
+      const { data: bookmarks, error: bookmarksError } = await supabase
         .from('bookmarks')
-        .select(`
-          video_id,
-          videos:video_id (
-            id,
-            video_url,
-            thumbnail_url,
-            title,
-            description,
-            likes_count,
-            comments_count,
-            views_count
-          )
-        `)
+        .select('video_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (bookmarks) {
-        setBookmarkedVideos(bookmarks.map(b => b.videos).filter(Boolean));
+      if (bookmarks && bookmarks.length > 0) {
+        const videoIds = bookmarks.map(b => b.video_id);
+        const { data: videos } = await supabase
+          .from('videos')
+          .select('*')
+          .in('id', videoIds)
+          .eq('is_active', true);
+
+        if (videos) {
+          setBookmarkedVideos(videos);
+        }
       }
 
       // Fetch liked videos
-      const { data: likes } = await supabase
+      const { data: likes, error: likesError } = await supabase
         .from('video_likes')
-        .select(`
-          video_id,
-          videos:video_id (
-            id,
-            video_url,
-            thumbnail_url,
-            title,
-            description,
-            likes_count,
-            comments_count,
-            views_count
-          )
-        `)
+        .select('video_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (likes) {
-        setLikedVideos(likes.map(l => l.videos).filter(Boolean));
+      if (likes && likes.length > 0) {
+        const videoIds = likes.map(l => l.video_id);
+        const { data: videos } = await supabase
+          .from('videos')
+          .select('*')
+          .in('id', videoIds)
+          .eq('is_active', true);
+
+        if (videos) {
+          setLikedVideos(videos);
+        }
       }
 
       // Fetch user's own videos
