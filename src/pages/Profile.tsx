@@ -58,6 +58,13 @@ const Profile = () => {
     const fetchUserContent = async () => {
       if (!user) return;
 
+      // Ensure fresh session (handles expired JWT)
+      try {
+        await supabase.auth.refreshSession();
+      } catch (e) {
+        console.warn('Could not refresh session', e);
+      }
+
       // Fetch bookmarked videos
       const { data: bookmarks, error: bookmarksError } = await supabase
         .from('bookmarks')
