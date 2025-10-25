@@ -18,11 +18,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Get all profiles without avatar_url or with dicebear avatars
+    // Get specific profiles that need avatar regeneration
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, display_name, bio')
-      .or('avatar_url.is.null,avatar_url.like.%dicebear%')
+      .select('id, username, display_name, bio, avatar_url')
+      .in('username', ['kunstneren', 'nordlysguide', 'oslovibes', 'bergenskok', 'fjellvandrer', 'trondheimstudie', 'skatepro', 'fotballkjempe'])
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)
