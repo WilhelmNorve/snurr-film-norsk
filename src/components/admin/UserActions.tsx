@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Ban, UserX, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -255,7 +256,10 @@ export const UserActions = () => {
                   <TableCell>
                     <Badge 
                       variant={action.is_active ? "destructive" : "default"}
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      className={cn(
+                        "cursor-pointer hover:opacity-80 transition-opacity",
+                        !action.is_active && "bg-green-500 hover:bg-green-600 text-white"
+                      )}
                       onClick={() => toggleActionStatus(action.id, action.is_active)}
                     >
                       {action.is_active ? "Aktivt" : "Avsluttet"}
