@@ -53,17 +53,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      console.log('Checking admin status for user:', userId);
       const { data, error } = await supabase.rpc('has_role', {
         _user_id: userId,
         _role: 'admin'
       });
 
+      console.log('has_role response:', { data, error });
+
       if (error) {
+        console.error('Admin check error:', error);
         setIsAdmin(false);
       } else {
-        setIsAdmin(Boolean(data));
+        const adminStatus = Boolean(data);
+        console.log('Setting admin status to:', adminStatus);
+        setIsAdmin(adminStatus);
       }
     } catch (error) {
+      console.error('Admin check exception:', error);
       setIsAdmin(false);
     } finally {
       setIsLoading(false);
