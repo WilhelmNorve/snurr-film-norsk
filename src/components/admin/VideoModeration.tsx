@@ -83,9 +83,10 @@ export const VideoModeration = () => {
 
   const toggleVideoStatus = async (videoId: string, currentStatus: boolean) => {
     try {
-      const { error } = await (supabase.rpc as any)('toggle_video_status', {
-        _video_id: videoId
-      });
+      const { error } = await supabase
+        .from('videos')
+        .update({ is_active: !currentStatus })
+        .eq('id', videoId);
 
       if (error) throw error;
 
@@ -178,15 +179,15 @@ export const VideoModeration = () => {
                         <Badge variant="destructive">Flagget</Badge>
                       )}
                       <Badge 
-                        variant={video.is_active ? "default" : "secondary"}
+                        variant={video.is_active ? "default" : "destructive"}
                         className={`cursor-pointer transition-colors ${
                           video.is_active 
                             ? "bg-green-600 hover:bg-green-700 text-white" 
-                            : "bg-gray-500 hover:bg-gray-600 text-white"
+                            : "bg-red-600 hover:bg-red-700 text-white"
                         }`}
                         onClick={() => toggleVideoStatus(video.id, video.is_active)}
                       >
-                        {video.is_active ? "Aktiv" : "Inaktiv"}
+                        {video.is_active ? "Aktiv" : "Deaktivert"}
                       </Badge>
                     </div>
                   </TableCell>
