@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface VideoPlayerProps {
@@ -9,6 +10,7 @@ interface VideoPlayerProps {
   description: string;
   likes: number;
   comments: number;
+  avatarUrl?: string;
   isLiked?: boolean;
   isBookmarked?: boolean;
   onLike?: () => void;
@@ -23,6 +25,7 @@ export const VideoPlayer = ({
   description,
   likes,
   comments,
+  avatarUrl,
   isLiked = false,
   isBookmarked = false,
   onLike,
@@ -100,7 +103,15 @@ export const VideoPlayer = ({
       {/* Video Info */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
         <div className="max-w-md">
-          <h3 className="font-bold text-lg mb-1">@{username}</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <Avatar className="h-10 w-10 border-2 border-white">
+              <AvatarImage src={avatarUrl} alt={username} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {username.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <h3 className="font-bold text-lg">@{username}</h3>
+          </div>
           <p className="text-sm text-foreground/90">{description}</p>
         </div>
       </div>
