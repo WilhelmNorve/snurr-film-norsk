@@ -27,6 +27,7 @@ const Profile = () => {
   const [bookmarkedVideos, setBookmarkedVideos] = useState<any[]>([]);
   const [likedVideos, setLikedVideos] = useState<any[]>([]);
   const [userVideos, setUserVideos] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -52,6 +53,24 @@ const Profile = () => {
     };
 
     fetchUserActions();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (data && !error) {
+        setProfile(data);
+      }
+    };
+
+    fetchProfile();
   }, [user]);
 
   useEffect(() => {
@@ -122,13 +141,6 @@ const Profile = () => {
     } catch (error) {
       toast.error("Kunne ikke logge ut");
     }
-  };
-
-  const userStats = {
-    followers: 15200,
-    following: 432,
-    likes: 125000,
-    videos: 87,
   };
 
   if (isLoading) {
@@ -217,16 +229,15 @@ const Profile = () => {
           </div>
         )}
 
-
         <div className="flex items-start gap-4 mb-6">
           <Avatar className="h-16 w-16 border-2 border-primary flex-shrink-0">
-            <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
-            <AvatarFallback>BN</AvatarFallback>
+            <AvatarImage src={profile?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"} />
+            <AvatarFallback>{profile?.username?.slice(0, 2).toUpperCase() || "BN"}</AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold truncate">
-              @{user?.user_metadata?.username || "brukernavn"}
+              @{profile?.username || user?.user_metadata?.username || "brukernavn"}
             </h1>
             <p className="text-sm text-muted-foreground truncate mb-3">
               {user?.email || "Oslo, Norge 🇳🇴"}
@@ -234,15 +245,15 @@ const Profile = () => {
 
             <div className="flex gap-4 text-sm mb-3">
               <div>
-                <span className="font-bold">{userStats.followers.toLocaleString("nb-NO")}</span>
+                <span className="font-bold">{(profile?.followers_count || 0).toLocaleString("nb-NO")}</span>
                 <span className="text-muted-foreground ml-1">følgere</span>
               </div>
               <div>
-                <span className="font-bold">{userStats.following.toLocaleString("nb-NO")}</span>
+                <span className="font-bold">{(profile?.following_count || 0).toLocaleString("nb-NO")}</span>
                 <span className="text-muted-foreground ml-1">følger</span>
               </div>
               <div>
-                <span className="font-bold">{userStats.likes.toLocaleString("nb-NO")}</span>
+                <span className="font-bold">{(profile?.likes_count || 0).toLocaleString("nb-NO")}</span>
                 <span className="text-muted-foreground ml-1">likes</span>
               </div>
             </div>
