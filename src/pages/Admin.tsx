@@ -13,6 +13,7 @@ import { ReportManagement } from "@/components/admin/ReportManagement";
 import { UserActions } from "@/components/admin/UserActions";
 import { PlatformSettings } from "@/components/admin/PlatformSettings";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { UserReportManagement } from "@/components/admin/UserReportManagement";
 
 interface StatsData {
   totalUsers: number;
@@ -125,7 +126,10 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="reports" className="mt-6">
-                <ReportManagement />
+                <div className="space-y-6">
+                  <UserReportManagement />
+                  <ReportManagement />
+                </div>
               </TabsContent>
 
               <TabsContent value="actions" className="mt-6">
