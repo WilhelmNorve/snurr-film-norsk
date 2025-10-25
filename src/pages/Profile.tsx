@@ -290,7 +290,7 @@ const Profile = () => {
                 {userVideos.map((video) => (
                   <div
                     key={video.id}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(`/?video=${video.id}`)}
                     className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
                   >
                     {video.thumbnail_url ? (
@@ -322,7 +322,7 @@ const Profile = () => {
                 {likedVideos.map((video) => (
                   <div
                     key={video.id}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(`/?video=${video.id}`)}
                     className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
                   >
                     {video.thumbnail_url ? (
@@ -354,7 +354,7 @@ const Profile = () => {
                 {bookmarkedVideos.map((video) => (
                   <div
                     key={video.id}
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(`/?video=${video.id}`)}
                     className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
                   >
                     {video.thumbnail_url ? (

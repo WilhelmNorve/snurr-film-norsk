@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Navigation } from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 
 // Mock data - in production this would come from the API
 const mockVideos = [
@@ -282,6 +283,9 @@ const AVATAR_OVERRIDES: Record<string, string> = {
 
 const Feed = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const videoId = searchParams.get('video');
+  const videoRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [videos, setVideos] = useState(mockVideos);
   const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null, followers_count: number }>>({});
   const [realVideos, setRealVideos] = useState<any[]>([]);
@@ -482,6 +486,13 @@ const Feed = () => {
     ...videos.map(v => ({ ...v, userId: undefined as string | undefined }))
   ];
 
+  // Scroll to video when videoId is in URL
+  useEffect(() => {
+    if (videoId && videoRefs.current[videoId]) {
+      videoRefs.current[videoId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [videoId, allVideos.length]);
+
   return (
     <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide pb-16 md:pb-0 md:pl-20">
       <Navigation />
@@ -492,24 +503,28 @@ const Feed = () => {
         const followersCount = profile?.followers_count || video.followersCount || 0;
         
         return (
-          <VideoPlayer
+          <div 
             key={video.id}
-            videoUrl={video.videoUrl}
-            username={video.username}
-            avatarUrl={avatarUrl}
-            description={video.description}
-            likes={video.likes}
-            comments={video.comments}
-            followersCount={followersCount}
-            videoId={video.id}
-            userId={video.userId}
-            isLiked={video.isLiked}
-            isBookmarked={video.isBookmarked}
-            onLike={() => handleLike(video.id)}
-            onBookmark={() => handleBookmark(video.id)}
-            onComment={() => console.log("Comment on", video.id)}
-            onShare={() => handleShare(video.id, video.username)}
-          />
+            ref={(el) => { videoRefs.current[video.id] = el; }}
+          >
+            <VideoPlayer
+              videoUrl={video.videoUrl}
+              username={video.username}
+              avatarUrl={avatarUrl}
+              description={video.description}
+              likes={video.likes}
+              comments={video.comments}
+              followersCount={followersCount}
+              videoId={video.id}
+              userId={video.userId}
+              isLiked={video.isLiked}
+              isBookmarked={video.isBookmarked}
+              onLike={() => handleLike(video.id)}
+              onBookmark={() => handleBookmark(video.id)}
+              onComment={() => console.log("Comment on", video.id)}
+              onShare={() => handleShare(video.id, video.username)}
+            />
+          </div>
         );
       })}
     </div>
