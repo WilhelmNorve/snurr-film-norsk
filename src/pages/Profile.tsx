@@ -9,15 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const Profile = () => {
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     // Redirect to auth if not logged in
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       navigate("/auth");
     }
-  }, [user, loading, navigate]);
+  }, [user, isLoading, navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -36,7 +36,7 @@ const Profile = () => {
     videos: 87,
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
