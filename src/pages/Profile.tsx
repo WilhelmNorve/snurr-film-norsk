@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Settings, Grid, Bookmark, Heart, LogOut, LogIn, AlertTriangle, Ban, UserX } from "lucide-react";
+import { Settings, Grid, Bookmark, Heart, LogOut, LogIn, AlertTriangle, Ban, UserX, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +24,9 @@ const Profile = () => {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
   const [userActions, setUserActions] = useState<UserAction[]>([]);
+  const [bookmarkedVideos, setBookmarkedVideos] = useState<any[]>([]);
+  const [likedVideos, setLikedVideos] = useState<any[]>([]);
+  const [userVideos, setUserVideos] = useState<any[]>([]);
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -49,6 +52,72 @@ const Profile = () => {
     };
 
     fetchUserActions();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchUserContent = async () => {
+      if (!user) return;
+
+      // Fetch bookmarked videos
+      const { data: bookmarks } = await supabase
+        .from('bookmarks')
+        .select(`
+          video_id,
+          videos:video_id (
+            id,
+            video_url,
+            thumbnail_url,
+            title,
+            description,
+            likes_count,
+            comments_count,
+            views_count
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (bookmarks) {
+        setBookmarkedVideos(bookmarks.map(b => b.videos).filter(Boolean));
+      }
+
+      // Fetch liked videos
+      const { data: likes } = await supabase
+        .from('video_likes')
+        .select(`
+          video_id,
+          videos:video_id (
+            id,
+            video_url,
+            thumbnail_url,
+            title,
+            description,
+            likes_count,
+            comments_count,
+            views_count
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (likes) {
+        setLikedVideos(likes.map(l => l.videos).filter(Boolean));
+      }
+
+      // Fetch user's own videos
+      const { data: videos } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (videos) {
+        setUserVideos(videos);
+      }
+    };
+
+    fetchUserContent();
   }, [user]);
 
   const handleSignOut = async () => {
@@ -219,30 +288,99 @@ const Profile = () => {
           </TabsList>
 
           <TabsContent value="videos" className="mt-6">
-            <div className="grid grid-cols-3 gap-1">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
-                >
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    Video {i + 1}
+            {userVideos.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Du har ingen videoer ennå
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1">
+                {userVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
+                  >
+                    {video.thumbnail_url ? (
+                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <video src={video.video_url} className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Play className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute bottom-2 left-2 flex gap-2 text-white text-xs">
+                      <span className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" /> {video.likes_count || 0}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="liked" className="mt-6">
-            <div className="text-center py-12 text-muted-foreground">
-              Dine likte videoer vises her
-            </div>
+            {likedVideos.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Dine likte videoer vises her
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1">
+                {likedVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
+                  >
+                    {video.thumbnail_url ? (
+                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <video src={video.video_url} className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Play className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute bottom-2 left-2 flex gap-2 text-white text-xs">
+                      <span className="flex items-center gap-1">
+                        <Heart className="h-3 w-3 fill-current" /> {video.likes_count || 0}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
-            <div className="text-center py-12 text-muted-foreground">
-              Dine lagrede videoer vises her
-            </div>
+            {bookmarkedVideos.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Dine lagrede videoer vises her
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1">
+                {bookmarkedVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
+                  >
+                    {video.thumbnail_url ? (
+                      <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <video src={video.video_url} className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Play className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute bottom-2 left-2 flex gap-2 text-white text-xs">
+                      <span className="flex items-center gap-1">
+                        <Bookmark className="h-3 w-3 fill-current" />
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" /> {video.likes_count || 0}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
