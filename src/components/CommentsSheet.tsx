@@ -32,9 +32,10 @@ interface CommentsSheetProps {
   onOpenChange: (open: boolean) => void;
   videoId: string;
   onCommentAdded?: () => void;
+  onUserCommentStatusChange?: (hasCommented: boolean) => void;
 }
 
-export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: CommentsSheetProps) => {
+export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded, onUserCommentStatusChange }: CommentsSheetProps) => {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -119,6 +120,7 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
       setNewComment("");
       fetchComments();
       onCommentAdded?.();
+      onUserCommentStatusChange?.(true); // Notify that user has now commented
       onOpenChange(false); // Lukk kommentarboksen
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -140,6 +142,16 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
       toast.success("Kommentar slettet");
       fetchComments();
       onCommentAdded?.();
+      
+      // Check if user still has other comments
+      const { data } = await supabase
+        .from('comments')
+        .select('id')
+        .eq('video_id', videoId)
+        .eq('user_id', user!.id)
+        .limit(1);
+      
+      onUserCommentStatusChange?.((data && data.length > 0) || false);
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error("Kunne ikke slette kommentar");

@@ -41,6 +41,7 @@ interface VideoPlayerProps {
   onShare?: () => void;
   onBookmark?: () => void;
   disableBookmark?: boolean;
+  hasUserCommented?: boolean;
 }
 
 export const VideoPlayer = ({
@@ -60,6 +61,7 @@ export const VideoPlayer = ({
   onShare,
   onBookmark,
   disableBookmark = false,
+  hasUserCommented = false,
 }: VideoPlayerProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -71,6 +73,7 @@ export const VideoPlayer = ({
   const [localCommentCount, setLocalCommentCount] = useState(comments);
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const [localIsBookmarked, setLocalIsBookmarked] = useState(isBookmarked);
+  const [localHasUserCommented, setLocalHasUserCommented] = useState(hasUserCommented);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
 
@@ -82,6 +85,30 @@ export const VideoPlayer = ({
   useEffect(() => {
     setLocalIsBookmarked(isBookmarked);
   }, [isBookmarked]);
+
+  useEffect(() => {
+    setLocalHasUserCommented(hasUserCommented);
+  }, [hasUserCommented]);
+
+  // Check if user has commented when component mounts or user changes
+  useEffect(() => {
+    const checkUserComment = async () => {
+      if (videoId && user) {
+        const { data } = await supabase
+          .from('comments')
+          .select('id')
+          .eq('video_id', videoId)
+          .eq('user_id', user.id)
+          .limit(1);
+        
+        setLocalHasUserCommented((data && data.length > 0) || false);
+      } else {
+        setLocalHasUserCommented(false);
+      }
+    };
+
+    checkUserComment();
+  }, [videoId, user]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -281,10 +308,10 @@ export const VideoPlayer = ({
             }}
             className={cn(
               "h-12 w-12 rounded-full hover:scale-110 transition-transform",
-              localCommentCount > 0 && "text-primary"
+              localHasUserCommented && "text-primary"
             )}
           >
-            <MessageCircle className={cn("h-7 w-7", localCommentCount > 0 && "fill-current")} />
+            <MessageCircle className={cn("h-7 w-7", localHasUserCommented && "fill-current")} />
           </Button>
           <span className="text-xs font-semibold">{localCommentCount.toLocaleString("nb-NO")}</span>
         </div>
@@ -359,6 +386,7 @@ export const VideoPlayer = ({
           onOpenChange={setCommentsOpen}
           videoId={videoId}
           onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
+          onUserCommentStatusChange={(hasCommented) => setLocalHasUserCommented(hasCommented)}
         />
       )}
     </div>
