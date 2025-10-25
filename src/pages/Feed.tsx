@@ -505,7 +505,6 @@ const Feed = () => {
             userId={video.userId}
             isLiked={video.isLiked}
             isBookmarked={video.isBookmarked}
-            disableBookmark={!video.userId}
             onLike={() => handleLike(video.id)}
             onBookmark={() => handleBookmark(video.id)}
             onComment={() => console.log("Comment on", video.id)}

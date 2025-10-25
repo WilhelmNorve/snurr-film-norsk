@@ -290,10 +290,6 @@ export const VideoPlayer = ({
           variant="ghost"
           size="icon"
           onClick={() => {
-            if (disableBookmark) {
-              toast.info("Kan ikke lagre demo-videoer");
-              return;
-            }
             setLocalIsBookmarked(!localIsBookmarked);
             onBookmark?.();
           }}
