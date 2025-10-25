@@ -187,7 +187,7 @@ export const VideoModeration = () => {
                         }`}
                         onClick={() => toggleVideoStatus(video.id, video.is_active)}
                       >
-                        {video.is_active ? "Aktiv" : "Deaktivert"}
+                        {video.is_active ? "Aktiv" : "Inaktiv"}
                       </Badge>
                     </div>
                   </TableCell>
