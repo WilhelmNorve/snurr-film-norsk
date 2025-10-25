@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { VerificationBadge } from "@/components/VerificationBadge";
+import { CommentsSheet } from "@/components/CommentsSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +65,7 @@ export const VideoPlayer = ({
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportType, setReportType] = useState<'video' | 'user'>('video');
   const [reportReason, setReportReason] = useState("");
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
 
@@ -253,7 +255,7 @@ export const VideoPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onComment}
+            onClick={() => setCommentsOpen(true)}
             className="h-12 w-12 rounded-full hover:scale-110 transition-transform"
           >
             <MessageCircle className="h-7 w-7" />
@@ -320,6 +322,14 @@ export const VideoPlayer = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Comments Sheet */}
+      <CommentsSheet
+        videoId={videoId || ''}
+        isOpen={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
+        commentsCount={comments}
+      />
     </div>
   );
 };
