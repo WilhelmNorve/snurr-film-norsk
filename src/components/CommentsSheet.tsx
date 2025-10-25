@@ -153,8 +153,8 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
           <SheetTitle>Kommentarer ({comments.length})</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col h-[calc(100%-60px)] mt-4 gap-4">
-          <ScrollArea className="flex-1 pr-4">{/* ... keep existing code */}
+        <div className="flex flex-col h-[calc(100%-60px)] mt-4 gap-2">
+          <ScrollArea className="flex-1 pr-4">
             {isLoading ? (
               <div className="text-center text-muted-foreground py-8">
                 Laster kommentarer...
@@ -164,9 +164,9 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
                 Ingen kommentarer ennå. Vær den første til å kommentere!
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
+                  <div key={comment.id} className="flex gap-2">{/* ... keep existing code */}
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       <AvatarImage src={comment.profiles?.avatar_url || undefined} />
                       <AvatarFallback>
@@ -204,7 +204,7 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
           </ScrollArea>
 
           {user ? (
-            <div className="flex gap-2 pb-4 items-center">
+            <div className="flex gap-2 pb-2 items-center">
               <Input
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -228,7 +228,7 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
               </Button>
             </div>
           ) : (
-            <div className="text-center text-muted-foreground pb-4">
+            <div className="text-center text-muted-foreground pb-2">
               Logg inn for å kommentere
             </div>
           )}
