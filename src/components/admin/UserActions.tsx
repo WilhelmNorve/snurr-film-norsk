@@ -153,6 +153,33 @@ export const UserActions = () => {
     }
   };
 
+  const toggleActionStatus = async (actionId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('user_actions')
+        .update({ is_active: !currentStatus })
+        .eq('id', actionId);
+
+      if (error) throw error;
+
+      toast({
+        title: currentStatus ? "Handling avsluttet" : "Handling aktivert",
+        description: currentStatus 
+          ? "Brukerhandlingen er nå avsluttet" 
+          : "Brukerhandlingen er nå aktivert igjen",
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Error toggling action status:', error);
+      toast({
+        variant: "destructive",
+        title: "Feil",
+        description: "Kunne ikke endre status",
+      });
+    }
+  };
+
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'ban':
@@ -226,8 +253,12 @@ export const UserActions = () => {
                     {action.duration_days ? `${action.duration_days} dager` : 'Permanent'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={action.is_active ? "default" : "secondary"}>
-                      {action.is_active ? "Aktiv" : "Utløpt"}
+                    <Badge 
+                      variant={action.is_active ? "default" : "secondary"}
+                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => toggleActionStatus(action.id, action.is_active)}
+                    >
+                      {action.is_active ? "Aktivt" : "Avsluttet"}
                     </Badge>
                   </TableCell>
                   <TableCell>
