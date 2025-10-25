@@ -227,13 +227,8 @@ const mockVideos = [
   },
 ]; 
 
-const AVATAR_OVERRIDES: Record<string, string> = {
-  naturelsker: "/avatars/user1.png",
-  nordlysguide: "/avatars/user2.png",
-  oslovibes: "/avatars/user3.png",
-  bergenskok: "/avatars/user4.png",
-  fjellvandrer: "/avatars/user5.png",
-};
+// No longer needed - we use database profiles directly
+const AVATAR_OVERRIDES: Record<string, string> = {};
 
 const Feed = () => {
   const [videos, setVideos] = useState(mockVideos);
