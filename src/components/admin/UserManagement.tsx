@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Shield, User } from "lucide-react";
+import { Loader2, Shield, User, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 interface UserData {
   id: string;
@@ -20,9 +21,14 @@ interface UserData {
   roles: string[];
 }
 
+type SortField = 'display_name' | 'username' | 'followers_count' | 'following_count' | 'videos_count' | 'likes_count' | 'created_at';
+type SortDirection = 'asc' | 'desc';
+
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,6 +87,40 @@ export const UserManagement = () => {
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-4 w-4 ml-1" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-4 w-4 ml-1" />
+      : <ArrowDown className="h-4 w-4 ml-1" />;
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+
+    if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase();
+    }
+    if (typeof bValue === 'string') {
+      bValue = bValue.toLowerCase();
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   const getRoleBadge = (roles: string[]) => {
     if (roles.includes('admin')) {
       return (
@@ -129,14 +169,77 @@ export const UserManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Bruker</TableHead>
-              <TableHead>Brukernavn</TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('display_name')}
+                >
+                  Bruker
+                  {getSortIcon('display_name')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('username')}
+                >
+                  Brukernavn
+                  {getSortIcon('username')}
+                </Button>
+              </TableHead>
               <TableHead>Rolle</TableHead>
-              <TableHead>Følgere</TableHead>
-              <TableHead>Følger</TableHead>
-              <TableHead>Videoer</TableHead>
-              <TableHead>Likes</TableHead>
-              <TableHead>Registrert</TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('followers_count')}
+                >
+                  Følgere
+                  {getSortIcon('followers_count')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('following_count')}
+                >
+                  Følger
+                  {getSortIcon('following_count')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('videos_count')}
+                >
+                  Videoer
+                  {getSortIcon('videos_count')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('likes_count')}
+                >
+                  Likes
+                  {getSortIcon('likes_count')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button 
+                  variant="ghost" 
+                  className="h-auto p-0 font-semibold hover:bg-transparent"
+                  onClick={() => handleSort('created_at')}
+                >
+                  Registrert
+                  {getSortIcon('created_at')}
+                </Button>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -147,7 +250,7 @@ export const UserManagement = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              sortedUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
