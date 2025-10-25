@@ -279,24 +279,51 @@ const AVATAR_OVERRIDES: Record<string, string> = {
 
 const Feed = () => {
   const [videos, setVideos] = useState(mockVideos);
-  const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null }>>({});
+  const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null, followers_count: number }>>({});
+  const [realVideos, setRealVideos] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Fetch profiles with followers count
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('username, avatar_url');
+        .select('username, avatar_url, followers_count');
       
-      if (data && !error) {
-        const profileMap = data.reduce((acc, profile) => {
-          acc[profile.username] = { avatar_url: profile.avatar_url };
+      if (profilesData && !profilesError) {
+        const profileMap = profilesData.reduce((acc, profile) => {
+          acc[profile.username] = { 
+            avatar_url: profile.avatar_url,
+            followers_count: profile.followers_count || 0
+          };
           return acc;
-        }, {} as Record<string, { avatar_url: string | null }>);
+        }, {} as Record<string, { avatar_url: string | null, followers_count: number }>);
         setProfiles(profileMap);
+      }
+
+      // Fetch real videos from database, sorted by newest first
+      const { data: videosData, error: videosError } = await supabase
+        .from('videos')
+        .select(`
+          id,
+          title,
+          description,
+          video_url,
+          thumbnail_url,
+          likes_count,
+          comments_count,
+          views_count,
+          created_at,
+          profiles:user_id (username, avatar_url, followers_count)
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (videosData && !videosError) {
+        setRealVideos(videosData);
       }
     };
 
-    fetchProfiles();
+    fetchData();
   }, []);
 
   const handleLike = (videoId: string) => {
@@ -321,13 +348,31 @@ const Feed = () => {
     );
   };
 
+  // Combine real videos with mock videos, real videos first
+  const allVideos = [
+    ...realVideos.map((video: any) => ({
+      id: video.id,
+      videoUrl: video.video_url,
+      username: video.profiles?.username || 'unknown',
+      avatarUrl: video.profiles?.avatar_url || '',
+      description: video.description || video.title,
+      likes: video.likes_count || 0,
+      comments: video.comments_count || 0,
+      followersCount: video.profiles?.followers_count || 0,
+      isLiked: false,
+      isBookmarked: false,
+    })),
+    ...videos
+  ];
+
   return (
     <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide pb-16 md:pb-0 md:pl-20">
       <Navigation />
-      {videos.map((video) => {
+      {allVideos.map((video) => {
         const profile = profiles[video.username];
         const override = AVATAR_OVERRIDES[video.username];
         const avatarUrl = override || profile?.avatar_url || video.avatarUrl;
+        const followersCount = profile?.followers_count || video.followersCount || 0;
         
         return (
           <VideoPlayer
@@ -338,7 +383,7 @@ const Feed = () => {
             description={video.description}
             likes={video.likes}
             comments={video.comments}
-            followersCount={video.followersCount}
+            followersCount={followersCount}
             isLiked={video.isLiked}
             isBookmarked={video.isBookmarked}
             onLike={() => handleLike(video.id)}
