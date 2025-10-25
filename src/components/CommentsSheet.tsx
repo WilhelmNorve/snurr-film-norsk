@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
@@ -119,6 +119,7 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
       setNewComment("");
       fetchComments();
       onCommentAdded?.();
+      onOpenChange(false); // Lukk kommentarboksen
     } catch (error) {
       console.error('Error adding comment:', error);
       toast.error("Kunne ikke legge til kommentar");
@@ -147,13 +148,13 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[80vh]">
+      <SheetContent side="bottom" className="h-[60vh]">
         <SheetHeader>
           <SheetTitle>Kommentarer ({comments.length})</SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col h-[calc(100%-60px)] mt-4 gap-4">
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="flex-1 pr-4">{/* ... keep existing code */}
             {isLoading ? (
               <div className="text-center text-muted-foreground py-8">
                 Laster kommentarer...
@@ -203,12 +204,12 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
           </ScrollArea>
 
           {user ? (
-            <div className="flex gap-2 pb-4">
-              <Textarea
+            <div className="flex gap-2 pb-4 items-center">
+              <Input
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Skriv en kommentar..."
-                className="min-h-[60px] resize-none"
+                className="flex-1"
                 maxLength={500}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -221,9 +222,9 @@ export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: C
                 onClick={handleSubmit}
                 disabled={isSubmitting || !newComment.trim()}
                 size="icon"
-                className="h-[60px] w-[60px] flex-shrink-0"
+                className="h-10 w-10 flex-shrink-0"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           ) : (
