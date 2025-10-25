@@ -89,10 +89,9 @@ export const VideoPlayer = ({
       // Count view after 3 seconds of playing
       viewTimer = setTimeout(async () => {
         try {
-          await supabase
-            .from('videos')
-            .update({ views_count: supabase.sql`views_count + 1` })
-            .eq('id', videoId);
+          await (supabase.rpc as any)('increment_video_views', {
+            _video_id: videoId
+          });
           
           setViewCounted(true);
         } catch (error) {

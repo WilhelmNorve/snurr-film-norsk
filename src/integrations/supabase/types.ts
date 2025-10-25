@@ -466,6 +466,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_video_views: { Args: { _video_id: string }; Returns: undefined }
       toggle_video_status: {
         Args: { _video_id: string }
         Returns: {
