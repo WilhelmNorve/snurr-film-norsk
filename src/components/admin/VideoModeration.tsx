@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -196,17 +196,6 @@ export const VideoModeration = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toggleVideoStatus(video.id, video.is_active)}
-                      >
-                        {video.is_active ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
                       <Button
                         size="sm"
                         variant="destructive"
