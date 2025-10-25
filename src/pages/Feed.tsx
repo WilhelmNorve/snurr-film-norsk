@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Mock data - in production this would come from the API
 const mockVideos = [
   {
-    id: "1",
+    id: "00000000-0000-0000-0000-000000000001",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     username: "naturelsker",
     avatarUrl: "/avatars/user1.png",
@@ -19,7 +19,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "2",
+    id: "00000000-0000-0000-0000-000000000002",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     username: "nordlysguide",
     avatarUrl: "/avatars/user2.png",
@@ -31,7 +31,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "3",
+    id: "00000000-0000-0000-0000-000000000003",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     username: "oslovibes",
     avatarUrl: "/avatars/user3.png",
@@ -43,7 +43,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "4",
+    id: "00000000-0000-0000-0000-000000000004",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
     username: "bergenskok",
     avatarUrl: "/avatars/user4.png",
@@ -55,7 +55,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "5",
+    id: "00000000-0000-0000-0000-000000000005",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     username: "fjellvandrer",
     avatarUrl: "/avatars/user5.png",
@@ -67,7 +67,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "6",
+    id: "00000000-0000-0000-0000-000000000006",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     username: "partypeople",
     avatarUrl: "/avatars/partypeople.png",
@@ -79,7 +79,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "7",
+    id: "00000000-0000-0000-0000-000000000007",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     username: "solnedgang",
     avatarUrl: "/avatars/solnedgang.png",
@@ -91,7 +91,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "8",
+    id: "00000000-0000-0000-0000-000000000008",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
     username: "skaternorge",
     avatarUrl: "/avatars/skaternorge.png",
@@ -103,7 +103,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "9",
+    id: "00000000-0000-0000-0000-000000000009",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     username: "kaffeguide",
     avatarUrl: "/avatars/kaffeguide.png",
@@ -115,7 +115,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "10",
+    id: "00000000-0000-0000-0000-000000000010",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
     username: "bokelsker",
     avatarUrl: "/avatars/bokelsker.png",
@@ -127,7 +127,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "11",
+    id: "00000000-0000-0000-0000-000000000011",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4",
     username: "byfotograf",
     avatarUrl: "/avatars/byfotograf.png",
@@ -139,7 +139,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "12",
+    id: "00000000-0000-0000-0000-000000000012",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
     username: "treningsglede",
     avatarUrl: "/avatars/treningsglede.png",
@@ -151,7 +151,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "13",
+    id: "00000000-0000-0000-0000-000000000013",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
     username: "yogalivet",
     avatarUrl: "/avatars/yogalivet.png",
@@ -163,7 +163,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "14",
+    id: "00000000-0000-0000-0000-000000000014",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     username: "matglede",
     avatarUrl: "/avatars/matglede.png",
@@ -175,7 +175,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "15",
+    id: "00000000-0000-0000-0000-000000000015",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     username: "fjellvandrer",
     avatarUrl: "/avatars/user5.png",
@@ -187,7 +187,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "16",
+    id: "00000000-0000-0000-0000-000000000016",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     username: "kunstner_no",
     avatarUrl: "/avatars/kunstner_no.png",
@@ -199,7 +199,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "17",
+    id: "00000000-0000-0000-0000-000000000017",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
     username: "gitargutten",
     avatarUrl: "/avatars/gitargutten.png",
@@ -211,7 +211,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "18",
+    id: "00000000-0000-0000-0000-000000000018",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     username: "regndager",
     avatarUrl: "/avatars/regndager.png",
@@ -223,7 +223,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "19",
+    id: "00000000-0000-0000-0000-000000000019",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     username: "hundeliv",
     avatarUrl: "/avatars/hundeliv.png",
@@ -235,7 +235,7 @@ const mockVideos = [
     isBookmarked: false,
   },
   {
-    id: "20",
+    id: "00000000-0000-0000-0000-000000000020",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
     username: "fyrverkeri",
     avatarUrl: "/avatars/fyrverkeri.png",
