@@ -279,9 +279,12 @@ export const VideoPlayer = ({
                 onComment?.();
               }
             }}
-            className="h-12 w-12 rounded-full hover:scale-110 transition-transform"
+            className={cn(
+              "h-12 w-12 rounded-full hover:scale-110 transition-transform",
+              localCommentCount > 0 && "text-primary"
+            )}
           >
-            <MessageCircle className="h-7 w-7" />
+            <MessageCircle className={cn("h-7 w-7", localCommentCount > 0 && "fill-current")} />
           </Button>
           <span className="text-xs font-semibold">{localCommentCount.toLocaleString("nb-NO")}</span>
         </div>
