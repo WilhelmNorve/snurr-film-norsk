@@ -106,7 +106,7 @@ export const VideoPlayer = ({
           <div className="flex items-center gap-2 mb-2">
             <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden">
               <img 
-                src={avatarUrl} 
+                src={`${avatarUrl}?t=${Date.now()}`}
                 alt={username}
                 className="h-full w-full object-cover object-top"
               />
