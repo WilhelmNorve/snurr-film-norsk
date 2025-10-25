@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Navigation } from "@/components/Navigation";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock data - in production this would come from the API
 const mockVideos = [
@@ -228,6 +229,25 @@ const mockVideos = [
 
 const Feed = () => {
   const [videos, setVideos] = useState(mockVideos);
+  const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null }>>({});
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username, avatar_url');
+      
+      if (data && !error) {
+        const profileMap = data.reduce((acc, profile) => {
+          acc[profile.username] = { avatar_url: profile.avatar_url };
+          return acc;
+        }, {} as Record<string, { avatar_url: string | null }>);
+        setProfiles(profileMap);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
 
   const handleLike = (videoId: string) => {
     setVideos((prevVideos) =>
@@ -254,23 +274,28 @@ const Feed = () => {
   return (
     <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide pb-16 md:pb-0 md:pl-20">
       <Navigation />
-      {videos.map((video) => (
-        <VideoPlayer
-          key={video.id}
-          videoUrl={video.videoUrl}
-          username={video.username}
-          avatarUrl={video.avatarUrl}
-          description={video.description}
-          likes={video.likes}
-          comments={video.comments}
-          isLiked={video.isLiked}
-          isBookmarked={video.isBookmarked}
-          onLike={() => handleLike(video.id)}
-          onBookmark={() => handleBookmark(video.id)}
-          onComment={() => console.log("Comment on", video.id)}
-          onShare={() => console.log("Share", video.id)}
-        />
-      ))}
+      {videos.map((video) => {
+        const profile = profiles[video.username];
+        const avatarUrl = profile?.avatar_url || video.avatarUrl;
+        
+        return (
+          <VideoPlayer
+            key={video.id}
+            videoUrl={video.videoUrl}
+            username={video.username}
+            avatarUrl={avatarUrl}
+            description={video.description}
+            likes={video.likes}
+            comments={video.comments}
+            isLiked={video.isLiked}
+            isBookmarked={video.isBookmarked}
+            onLike={() => handleLike(video.id)}
+            onBookmark={() => handleBookmark(video.id)}
+            onComment={() => console.log("Comment on", video.id)}
+            onShare={() => console.log("Share", video.id)}
+          />
+        );
+      })}
     </div>
   );
 };
