@@ -286,6 +286,7 @@ const Feed = () => {
   const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null, followers_count: number }>>({});
   const [realVideos, setRealVideos] = useState<any[]>([]);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+  const [userBookmarks, setUserBookmarks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -338,6 +339,16 @@ const Feed = () => {
         if (likesData) {
           setUserLikes(new Set(likesData.map(like => like.video_id)));
         }
+
+        // Fetch user's bookmarks
+        const { data: bookmarksData } = await supabase
+          .from('bookmarks')
+          .select('video_id')
+          .eq('user_id', user.id);
+        
+        if (bookmarksData) {
+          setUserBookmarks(new Set(bookmarksData.map(b => b.video_id)));
+        }
       }
     };
 
@@ -387,12 +398,68 @@ const Feed = () => {
     }
   };
 
-  const handleBookmark = (videoId: string) => {
-    setVideos((prevVideos) =>
-      prevVideos.map((video) =>
-        video.id === videoId ? { ...video, isBookmarked: !video.isBookmarked } : video
-      )
-    );
+  const handleBookmark = async (videoId: string) => {
+    if (!user) {
+      toast.error("Du må være logget inn for å lagre");
+      return;
+    }
+
+    const isBookmarked = userBookmarks.has(videoId);
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', user.id);
+        
+        setUserBookmarks(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(videoId);
+          return newSet;
+        });
+        toast.success("Fjernet fra lagrede");
+      } else {
+        // Add bookmark
+        await supabase
+          .from('bookmarks')
+          .insert({ video_id: videoId, user_id: user.id });
+        
+        setUserBookmarks(prev => new Set(prev).add(videoId));
+        toast.success("Lagret!");
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      toast.error("Kunne ikke oppdatere lagring");
+    }
+  };
+
+  const handleShare = async (videoId: string, username: string) => {
+    const shareUrl = `${window.location.origin}/?video=${videoId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Video fra @${username}`,
+          url: shareUrl
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link kopiert!");
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        toast.error("Kunne ikke kopiere link");
+      }
+    }
   };
 
   // Combine real videos with mock videos, real videos first
@@ -408,7 +475,7 @@ const Feed = () => {
       followersCount: video.profiles?.followers_count || 0,
       userId: video.profiles?.id || video.user_id,
       isLiked: userLikes.has(video.id),
-      isBookmarked: false,
+      isBookmarked: userBookmarks.has(video.id),
     })),
     ...videos.map(v => ({ ...v, userId: undefined as string | undefined }))
   ];
@@ -439,7 +506,7 @@ const Feed = () => {
             onLike={() => handleLike(video.id)}
             onBookmark={() => handleBookmark(video.id)}
             onComment={() => console.log("Comment on", video.id)}
-            onShare={() => console.log("Share", video.id)}
+            onShare={() => handleShare(video.id, video.username)}
           />
         );
       })}
