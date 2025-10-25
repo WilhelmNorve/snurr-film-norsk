@@ -5,7 +5,7 @@ interface StatsData {
   totalUsers: number;
   totalVideos: number;
   pendingReports: number;
-  todayViews: number;
+  totalViews: number;
 }
 
 interface AdminStatsProps {
@@ -55,11 +55,11 @@ export const AdminStats = ({ stats }: AdminStatsProps) => {
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Visninger i dag
+            Totale visninger
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.todayViews}</div>
+          <div className="text-2xl font-bold">{stats.totalViews}</div>
         </CardContent>
       </Card>
     </div>

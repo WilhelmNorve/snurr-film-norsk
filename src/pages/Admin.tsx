@@ -19,7 +19,7 @@ interface StatsData {
   totalUsers: number;
   totalVideos: number;
   pendingReports: number;
-  todayViews: number;
+  totalViews: number;
 }
 
 const Admin = () => {
@@ -28,7 +28,7 @@ const Admin = () => {
     totalUsers: 0,
     totalVideos: 0,
     pendingReports: 0,
-    todayViews: 0,
+    totalViews: 0,
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,13 +53,13 @@ const Admin = () => {
         supabase.from('video_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
-      const todayViews = videosRes.data?.reduce((sum, video) => sum + (video.views_count || 0), 0) || 0;
+      const totalViews = videosRes.data?.reduce((sum, video) => sum + (video.views_count || 0), 0) || 0;
 
       setStats({
         totalUsers: usersRes.count || 0,
         totalVideos: videosRes.count || 0,
         pendingReports: reportsRes.count || 0,
-        todayViews,
+        totalViews,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
