@@ -289,10 +289,11 @@ export const VideoPlayer = ({
               "h-12 w-12 rounded-full hover:scale-110 transition-transform",
               localIsLiked && "text-primary animate-pulse-glow"
             )}
+            style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' }}
           >
             <Heart className={cn("h-7 w-7", localIsLiked && "fill-current")} />
           </Button>
-          <span className="text-xs font-semibold">{likes.toLocaleString("nb-NO")}</span>
+          <span className="text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)' }}>{likes.toLocaleString("nb-NO")}</span>
         </div>
 
         <div className="flex flex-col items-center gap-1">
@@ -310,10 +311,11 @@ export const VideoPlayer = ({
               "h-12 w-12 rounded-full hover:scale-110 transition-transform",
               localHasUserCommented && "text-primary"
             )}
+            style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' }}
           >
             <MessageCircle className={cn("h-7 w-7", localHasUserCommented && "fill-current")} />
           </Button>
-          <span className="text-xs font-semibold">{localCommentCount.toLocaleString("nb-NO")}</span>
+          <span className="text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)' }}>{localCommentCount.toLocaleString("nb-NO")}</span>
         </div>
 
         <Button
@@ -327,6 +329,7 @@ export const VideoPlayer = ({
             "h-12 w-12 rounded-full hover:scale-110 transition-transform",
             localIsBookmarked && "text-primary"
           )}
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' }}
         >
           <Bookmark className={cn("h-7 w-7", localIsBookmarked && "fill-current")} />
         </Button>
@@ -336,6 +339,7 @@ export const VideoPlayer = ({
           size="icon"
           onClick={onShare}
           className="h-12 w-12 rounded-full hover:scale-110 transition-transform"
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' }}
         >
           <Share2 className="h-7 w-7" />
         </Button>
