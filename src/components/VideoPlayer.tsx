@@ -108,7 +108,7 @@ export const VideoPlayer = ({
               <img 
                 src={avatarUrl} 
                 alt={username}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover object-top"
               />
             </div>
             <h3 className="font-bold text-lg">@{username}</h3>
