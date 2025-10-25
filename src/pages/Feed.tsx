@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Navigation } from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 // Mock data - in production this would come from the API
 const mockVideos = [
@@ -279,9 +281,11 @@ const AVATAR_OVERRIDES: Record<string, string> = {
 };
 
 const Feed = () => {
+  const { user } = useAuth();
   const [videos, setVideos] = useState(mockVideos);
   const [profiles, setProfiles] = useState<Record<string, { avatar_url: string | null, followers_count: number }>>({});
   const [realVideos, setRealVideos] = useState<any[]>([]);
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -323,23 +327,64 @@ const Feed = () => {
       if (videosData && !videosError) {
         setRealVideos(videosData);
       }
+
+      // Fetch user's likes if logged in
+      if (user) {
+        const { data: likesData } = await supabase
+          .from('video_likes')
+          .select('video_id')
+          .eq('user_id', user.id);
+        
+        if (likesData) {
+          setUserLikes(new Set(likesData.map(like => like.video_id)));
+        }
+      }
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
-  const handleLike = (videoId: string) => {
-    setVideos((prevVideos) =>
-      prevVideos.map((video) =>
-        video.id === videoId
-          ? {
-              ...video,
-              isLiked: !video.isLiked,
-              likes: video.isLiked ? video.likes - 1 : video.likes + 1,
-            }
-          : video
-      )
-    );
+  const handleLike = async (videoId: string) => {
+    if (!user) {
+      toast.error("Du må være logget inn for å like");
+      return;
+    }
+
+    const isLiked = userLikes.has(videoId);
+
+    try {
+      if (isLiked) {
+        // Unlike
+        await supabase
+          .from('video_likes')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', user.id);
+        
+        setUserLikes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(videoId);
+          return newSet;
+        });
+      } else {
+        // Like
+        await supabase
+          .from('video_likes')
+          .insert({ video_id: videoId, user_id: user.id });
+        
+        setUserLikes(prev => new Set(prev).add(videoId));
+      }
+
+      // Update local state for immediate feedback
+      setRealVideos(prev => prev.map(v => 
+        v.id === videoId 
+          ? { ...v, likes_count: v.likes_count + (isLiked ? -1 : 1) }
+          : v
+      ));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast.error("Kunne ikke oppdatere like");
+    }
   };
 
   const handleBookmark = (videoId: string) => {
@@ -362,7 +407,7 @@ const Feed = () => {
       comments: video.comments_count || 0,
       followersCount: video.profiles?.followers_count || 0,
       userId: video.profiles?.id || video.user_id,
-      isLiked: false,
+      isLiked: userLikes.has(video.id),
       isBookmarked: false,
     })),
     ...videos.map(v => ({ ...v, userId: undefined as string | undefined }))
