@@ -41,8 +41,8 @@ const mockVideos = [
   {
     id: "4",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    username: "kystliv",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=coast",
+    username: "bergenskok",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=chef",
     description: "Bølgene ved vestlandet 🌊 #hav #natur",
     likes: 15600,
     comments: 423,
@@ -52,8 +52,8 @@ const mockVideos = [
   {
     id: "5",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-    username: "techsara",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=tech",
+    username: "fjellvandrer",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=hiker",
     description: "Produktiv dag på kontoret 💻 #jobb #tech",
     likes: 7800,
     comments: 156,
