@@ -74,8 +74,48 @@ export const VideoPlayer = ({
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const [localIsBookmarked, setLocalIsBookmarked] = useState(isBookmarked);
   const [localHasUserCommented, setLocalHasUserCommented] = useState(hasUserCommented);
+  const [viewCounted, setViewCounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
+
+  // Count view when video plays for more than 3 seconds
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoId || viewCounted) return;
+
+    let viewTimer: NodeJS.Timeout;
+    
+    const handlePlay = () => {
+      // Count view after 3 seconds of playing
+      viewTimer = setTimeout(async () => {
+        try {
+          await supabase
+            .from('videos')
+            .update({ views_count: supabase.sql`views_count + 1` })
+            .eq('id', videoId);
+          
+          setViewCounted(true);
+        } catch (error) {
+          console.error('Error counting view:', error);
+        }
+      }, 3000);
+    };
+
+    const handlePause = () => {
+      if (viewTimer) {
+        clearTimeout(viewTimer);
+      }
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      if (viewTimer) clearTimeout(viewTimer);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
+  }, [videoId, viewCounted]);
 
   // Update local state when props change
   useEffect(() => {
