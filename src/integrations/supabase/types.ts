@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      platform_settings: {
+        Row: {
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -56,6 +88,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string | null
+          duration_days: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string | null
+          duration_days?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string | null
+          duration_days?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_actions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_actions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -76,6 +159,123 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          video_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          video_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_reports_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      videos: {
+        Row: {
+          comments_count: number | null
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          is_active: boolean | null
+          is_flagged: boolean | null
+          likes_count: number | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          video_url: string
+          views_count: number | null
+        }
+        Insert: {
+          comments_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_flagged?: boolean | null
+          likes_count?: number | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          video_url: string
+          views_count?: number | null
+        }
+        Update: {
+          comments_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_flagged?: boolean | null
+          likes_count?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          video_url?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

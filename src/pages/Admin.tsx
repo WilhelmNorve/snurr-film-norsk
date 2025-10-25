@@ -2,26 +2,32 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserCog, Users, Shield } from "lucide-react";
+import { Shield, Video, Flag, Settings, UserCog, Users } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
+import { AdminStats } from "@/components/admin/AdminStats";
+import { VideoModeration } from "@/components/admin/VideoModeration";
+import { ReportManagement } from "@/components/admin/ReportManagement";
+import { UserActions } from "@/components/admin/UserActions";
+import { PlatformSettings } from "@/components/admin/PlatformSettings";
 
-interface UserWithRole {
-  id: string;
-  email: string;
-  username: string;
-  roles: string[];
-  created_at: string;
+interface StatsData {
+  totalUsers: number;
+  totalVideos: number;
+  pendingReports: number;
+  todayViews: number;
 }
 
 const Admin = () => {
   const { isAdmin, isLoading: authLoading } = useAuth();
-  const [users, setUsers] = useState<UserWithRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<StatsData>({
+    totalUsers: 0,
+    totalVideos: 0,
+    pendingReports: 0,
+    todayViews: 0,
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -33,80 +39,32 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      fetchUsers();
+      fetchStats();
     }
   }, [isAdmin]);
 
-  const fetchUsers = async () => {
+  const fetchStats = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, username, created_at');
+      const [usersRes, videosRes, reportsRes] = await Promise.all([
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('videos').select('id, views_count', { count: 'exact' }),
+        supabase.from('video_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      ]);
 
-      if (profilesError) throw profilesError;
+      const todayViews = videosRes.data?.reduce((sum, video) => sum + (video.views_count || 0), 0) || 0;
 
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      const usersWithRoles = profiles?.map(profile => ({
-        id: profile.id,
-        email: '',
-        username: profile.username,
-        roles: roles?.filter(r => r.user_id === profile.id).map(r => r.role) || [],
-        created_at: profile.created_at,
-      })) || [];
-
-      setUsers(usersWithRoles);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        variant: "destructive",
-        title: "Feil",
-        description: "Kunne ikke laste brukere",
+      setStats({
+        totalUsers: usersRes.count || 0,
+        totalVideos: videosRes.count || 0,
+        pendingReports: reportsRes.count || 0,
+        todayViews,
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleAdminRole = async (userId: string, hasAdmin: boolean) => {
-    try {
-      if (hasAdmin) {
-        const { error } = await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', userId)
-          .eq('role', 'admin');
-
-        if (error) throw error;
-        
-        toast({
-          title: "Admin-rolle fjernet",
-          description: "Brukeren er ikke lenger administrator",
-        });
-      } else {
-        const { error } = await supabase
-          .from('user_roles')
-          .insert({ user_id: userId, role: 'admin' });
-
-        if (error) throw error;
-        
-        toast({
-          title: "Admin-rolle lagt til",
-          description: "Brukeren er nå administrator",
-        });
-      }
-
-      fetchUsers();
     } catch (error) {
-      console.error('Error toggling admin role:', error);
+      console.error('Error fetching stats:', error);
       toast({
         variant: "destructive",
         title: "Feil",
-        description: "Kunne ikke endre rolle",
+        description: "Kunne ikke laste statistikk",
       });
     }
   };
@@ -119,7 +77,7 @@ const Admin = () => {
     <div className="min-h-screen bg-background pb-16 md:pb-0 md:pl-20">
       <Navigation />
       
-      <div className="container mx-auto p-6 max-w-6xl">
+      <div className="container mx-auto p-6 max-w-7xl">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -127,104 +85,48 @@ const Admin = () => {
               <CardTitle className="text-2xl">Admin Panel</CardTitle>
             </div>
             <CardDescription>
-              Administrer brukere og roller i systemet
+              Komplett administrasjonspanel for plattformen
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Totalt antall brukere
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{users.length}</div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <UserCog className="h-4 w-4" />
-                    Administratorer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {users.filter(u => u.roles.includes('admin')).length}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Vanlige brukere
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {users.filter(u => !u.roles.includes('admin')).length}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminStats stats={stats} />
+            
+            <Tabs defaultValue="videos" className="mt-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="videos" className="flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  Videoer
+                </TabsTrigger>
+                <TabsTrigger value="reports" className="flex items-center gap-2">
+                  <Flag className="h-4 w-4" />
+                  Rapporter
+                </TabsTrigger>
+                <TabsTrigger value="actions" className="flex items-center gap-2">
+                  <UserCog className="h-4 w-4" />
+                  Brukerhandlinger
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Innstillinger
+                </TabsTrigger>
+              </TabsList>
 
-            {isLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Brukernavn</TableHead>
-                      <TableHead>Roller</TableHead>
-                      <TableHead>Opprettet</TableHead>
-                      <TableHead className="text-right">Handlinger</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => {
-                      const hasAdmin = user.roles.includes('admin');
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">@{user.username}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              {user.roles.map((role) => (
-                                <Badge
-                                  key={role}
-                                  variant={role === 'admin' ? 'default' : 'secondary'}
-                                >
-                                  {role}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(user.created_at).toLocaleDateString('nb-NO')}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              size="sm"
-                              variant={hasAdmin ? "destructive" : "default"}
-                              onClick={() => toggleAdminRole(user.id, hasAdmin)}
-                            >
-                              {hasAdmin ? 'Fjern admin' : 'Gjør til admin'}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+              <TabsContent value="videos" className="mt-6">
+                <VideoModeration />
+              </TabsContent>
+
+              <TabsContent value="reports" className="mt-6">
+                <ReportManagement />
+              </TabsContent>
+
+              <TabsContent value="actions" className="mt-6">
+                <UserActions />
+              </TabsContent>
+
+              <TabsContent value="settings" className="mt-6">
+                <PlatformSettings />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
