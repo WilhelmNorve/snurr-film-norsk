@@ -52,7 +52,8 @@ export const VideoModeration = () => {
           created_at,
           profiles:user_id (username)
         `)
-        .order('likes_count', { ascending: false });
+        .order('likes_count', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
@@ -82,18 +83,21 @@ export const VideoModeration = () => {
 
   const toggleVideoStatus = async (videoId: string, currentStatus: boolean) => {
     try {
-      // Use backend function to bypass RLS safely (SECURITY DEFINER)
-      const { data, error } = await supabase.rpc('toggle_video_status', { _video_id: videoId });
+      const { error } = await supabase
+        .from('videos')
+        .update({ is_active: !currentStatus })
+        .eq('id', videoId);
+
       if (error) throw error;
 
-      const newStatus = data?.[0]?.is_active ?? !currentStatus;
       toast({
-        title: newStatus ? "Video aktivert" : "Video deaktivert",
-        description: newStatus ? "Videoen er nå synlig for brukere" : "Videoen er nå skjult for brukere",
+        title: currentStatus ? "Video skjult" : "Video aktivert",
+        description: currentStatus 
+          ? "Videoen er nå skjult for brukere" 
+          : "Videoen er nå synlig for brukere",
       });
 
-      // Optimistic UI refresh
-      setVideos((prev) => prev.map(v => v.id === videoId ? { ...v, is_active: newStatus } : v));
+      fetchVideos();
     } catch (error) {
       console.error('Error toggling video status:', error);
       toast({

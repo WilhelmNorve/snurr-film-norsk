@@ -466,13 +466,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      toggle_video_status: {
-        Args: { _video_id: string }
-        Returns: {
-          id: string
-          is_active: boolean
-        }[]
-      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
