@@ -35,8 +35,8 @@ export const Navigation = () => {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className="h-6 w-6" />
-              <span className="text-xs">{item.label}</span>
+              <item.icon className="h-6 w-6 drop-shadow-md" />
+              <span className="text-xs drop-shadow-sm">{item.label}</span>
             </Link>
           ))}
           {user && (
@@ -44,8 +44,8 @@ export const Navigation = () => {
               onClick={() => signOut()}
               className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <LogOut className="h-6 w-6" />
-              <span className="text-xs">Logg ut</span>
+              <LogOut className="h-6 w-6 drop-shadow-md" />
+              <span className="text-xs drop-shadow-sm">Logg ut</span>
             </button>
           )}
         </div>
@@ -71,7 +71,7 @@ export const Navigation = () => {
             )}
             title={item.label}
           >
-            <item.icon className="h-6 w-6" />
+            <item.icon className="h-6 w-6 drop-shadow-md" />
           </Link>
         ))}
         
@@ -83,7 +83,7 @@ export const Navigation = () => {
             className="mt-auto text-muted-foreground hover:text-foreground"
             title="Logg ut"
           >
-            <LogOut className="h-6 w-6" />
+            <LogOut className="h-6 w-6 drop-shadow-md" />
           </Button>
         )}
       </nav>
