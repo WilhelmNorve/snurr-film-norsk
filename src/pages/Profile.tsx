@@ -232,37 +232,39 @@ const Profile = () => {
           </Button>
         </div>
 
-        <div className="flex flex-col items-center mb-8">
-          <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
+        <div className="flex items-start gap-4 mb-6">
+          <Avatar className="h-16 w-16 border-2 border-primary flex-shrink-0">
             <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" />
             <AvatarFallback>BN</AvatarFallback>
           </Avatar>
           
-          <h1 className="text-2xl font-bold mb-1">
-            @{user?.user_metadata?.username || "brukernavn"}
-          </h1>
-          <p className="text-muted-foreground mb-4">
-            {user?.email || "Oslo, Norge 🇳🇴"}
-          </p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold truncate">
+              @{user?.user_metadata?.username || "brukernavn"}
+            </h1>
+            <p className="text-sm text-muted-foreground truncate mb-3">
+              {user?.email || "Oslo, Norge 🇳🇴"}
+            </p>
 
-          <div className="flex gap-8 mb-6">
-            <div className="text-center">
-              <p className="text-xl font-bold">{userStats.followers.toLocaleString("nb-NO")}</p>
-              <p className="text-sm text-muted-foreground">Følgere</p>
+            <div className="flex gap-4 text-sm mb-3">
+              <div>
+                <span className="font-bold">{userStats.followers.toLocaleString("nb-NO")}</span>
+                <span className="text-muted-foreground ml-1">følgere</span>
+              </div>
+              <div>
+                <span className="font-bold">{userStats.following.toLocaleString("nb-NO")}</span>
+                <span className="text-muted-foreground ml-1">følger</span>
+              </div>
+              <div>
+                <span className="font-bold">{userStats.likes.toLocaleString("nb-NO")}</span>
+                <span className="text-muted-foreground ml-1">likes</span>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xl font-bold">{userStats.following.toLocaleString("nb-NO")}</p>
-              <p className="text-sm text-muted-foreground">Følger</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold">{userStats.likes.toLocaleString("nb-NO")}</p>
-              <p className="text-sm text-muted-foreground">Likes</p>
-            </div>
+
+            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity w-full sm:w-auto">
+              Rediger profil
+            </Button>
           </div>
-
-          <Button className="bg-gradient-primary hover:opacity-90 transition-opacity px-12">
-            Rediger profil
-          </Button>
         </div>
 
         <Tabs defaultValue="videos" className="w-full">
