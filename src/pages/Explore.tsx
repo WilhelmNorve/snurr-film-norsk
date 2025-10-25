@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Search, TrendingUp } from "lucide-react";
+import { Search, TrendingUp, Play, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const trendingTopics = [
   { id: "1", tag: "#norge", views: "2.5M visninger" },
@@ -15,6 +17,25 @@ const trendingTopics = [
 
 const Explore = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [suggestedVideos, setSuggestedVideos] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSuggestedVideos = async () => {
+      const { data: videos } = await supabase
+        .from('videos')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(12);
+
+      if (videos) {
+        setSuggestedVideos(videos);
+      }
+    };
+
+    fetchSuggestedVideos();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0 md:pl-20">
@@ -63,13 +84,24 @@ const Explore = () => {
         <section className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Foreslåtte videoer</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
+            {suggestedVideos.map((video) => (
               <div
-                key={item}
-                className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+                key={video.id}
+                onClick={() => navigate("/")}
+                className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
               >
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  Video {item}
+                {video.thumbnail_url ? (
+                  <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                ) : (
+                  <video src={video.video_url} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Play className="h-8 w-8 text-white" />
+                </div>
+                <div className="absolute bottom-2 left-2 flex gap-2 text-white text-xs">
+                  <span className="flex items-center gap-1">
+                    <Heart className="h-3 w-3" /> {video.likes_count || 0}
+                  </span>
                 </div>
               </div>
             ))}
