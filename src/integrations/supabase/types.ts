@@ -115,40 +115,58 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          date_of_birth: string | null
           display_name: string | null
           followers_count: number | null
           following_count: number | null
+          gender: string | null
           id: string
           likes_count: number | null
+          location: string | null
+          nationality: string | null
+          phone_number: string | null
           updated_at: string | null
           username: string
           videos_count: number | null
+          website: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           display_name?: string | null
           followers_count?: number | null
           following_count?: number | null
+          gender?: string | null
           id: string
           likes_count?: number | null
+          location?: string | null
+          nationality?: string | null
+          phone_number?: string | null
           updated_at?: string | null
           username: string
           videos_count?: number | null
+          website?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           display_name?: string | null
           followers_count?: number | null
           following_count?: number | null
+          gender?: string | null
           id?: string
           likes_count?: number | null
+          location?: string | null
+          nationality?: string | null
+          phone_number?: string | null
           updated_at?: string | null
           username?: string
           videos_count?: number | null
+          website?: string | null
         }
         Relationships: []
       }

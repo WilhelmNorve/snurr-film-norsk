@@ -248,7 +248,10 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-2 flex-wrap">
-              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+              <Button 
+                className="bg-gradient-primary hover:opacity-90 transition-opacity"
+                onClick={() => navigate("/profile/edit")}
+              >
                 Rediger profil
               </Button>
               <Button 
