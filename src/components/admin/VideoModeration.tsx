@@ -52,8 +52,7 @@ export const VideoModeration = () => {
           created_at,
           profiles:user_id (username)
         `)
-        .order('likes_count', { ascending: false })
-        .limit(50);
+        .order('likes_count', { ascending: false });
 
       if (error) throw error;
 
