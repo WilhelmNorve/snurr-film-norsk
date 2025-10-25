@@ -67,8 +67,19 @@ export const VideoPlayer = ({
   const [reportReason, setReportReason] = useState("");
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(comments);
+  const [localIsLiked, setLocalIsLiked] = useState(isLiked);
+  const [localIsBookmarked, setLocalIsBookmarked] = useState(isBookmarked);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalIsLiked(isLiked);
+  }, [isLiked]);
+
+  useEffect(() => {
+    setLocalIsBookmarked(isBookmarked);
+  }, [isBookmarked]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -241,13 +252,16 @@ export const VideoPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={onLike}
+            onClick={() => {
+              setLocalIsLiked(!localIsLiked);
+              onLike?.();
+            }}
             className={cn(
               "h-12 w-12 rounded-full hover:scale-110 transition-transform",
-              isLiked && "text-primary animate-pulse-glow"
+              localIsLiked && "text-primary animate-pulse-glow"
             )}
           >
-            <Heart className={cn("h-7 w-7", isLiked && "fill-current")} />
+            <Heart className={cn("h-7 w-7", localIsLiked && "fill-current")} />
           </Button>
           <span className="text-xs font-semibold">{likes.toLocaleString("nb-NO")}</span>
         </div>
@@ -273,13 +287,16 @@ export const VideoPlayer = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onBookmark}
+          onClick={() => {
+            setLocalIsBookmarked(!localIsBookmarked);
+            onBookmark?.();
+          }}
           className={cn(
             "h-12 w-12 rounded-full hover:scale-110 transition-transform",
-            isBookmarked && "text-primary"
+            localIsBookmarked && "text-primary"
           )}
         >
-          <Bookmark className={cn("h-7 w-7", isBookmarked && "fill-current")} />
+          <Bookmark className={cn("h-7 w-7", localIsBookmarked && "fill-current")} />
         </Button>
 
         <Button
