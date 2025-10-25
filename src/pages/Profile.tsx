@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Settings, Grid, Bookmark, Heart, LogOut, LogIn, AlertTriangle, Ban, UserX, Play } from "lucide-react";
+import { Grid, Bookmark, Heart, LogOut, LogIn, AlertTriangle, Ban, UserX, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -217,20 +217,6 @@ const Profile = () => {
           </div>
         )}
 
-        <div className="flex justify-between items-center mb-6">
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSignOut} 
-            className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Logg ut
-          </Button>
-        </div>
 
         <div className="flex items-start gap-4 mb-6">
           <Avatar className="h-16 w-16 border-2 border-primary flex-shrink-0">
@@ -261,9 +247,20 @@ const Profile = () => {
               </div>
             </div>
 
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity w-full sm:w-auto">
-              Rediger profil
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+                Rediger profil
+              </Button>
+              <Button 
+                variant="outline" 
+                size="default"
+                onClick={handleSignOut} 
+                className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Logg ut
+              </Button>
+            </div>
           </div>
         </div>
 
