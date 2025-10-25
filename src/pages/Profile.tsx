@@ -1,16 +1,29 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Settings, Grid, Bookmark, Heart, LogOut, LogIn } from "lucide-react";
+import { Settings, Grid, Bookmark, Heart, LogOut, LogIn, AlertTriangle, Ban, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UserAction {
+  id: string;
+  action_type: string;
+  reason: string;
+  duration_days: number | null;
+  created_at: string;
+  is_active: boolean;
+}
 
 const Profile = () => {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [userActions, setUserActions] = useState<UserAction[]>([]);
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -18,6 +31,25 @@ const Profile = () => {
       navigate("/auth");
     }
   }, [user, isLoading, navigate]);
+
+  useEffect(() => {
+    const fetchUserActions = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_actions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (data && !error) {
+        setUserActions(data);
+      }
+    };
+
+    fetchUserActions();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -53,11 +85,75 @@ const Profile = () => {
     return null;
   }
 
+  const getActionIcon = (type: string) => {
+    switch (type) {
+      case 'ban':
+        return <Ban className="h-4 w-4" />;
+      case 'suspend':
+        return <UserX className="h-4 w-4" />;
+      default:
+        return <AlertTriangle className="h-4 w-4" />;
+    }
+  };
+
+  const getActionVariant = (type: string): "default" | "destructive" => {
+    if (type === 'ban' || type === 'suspend') return "destructive";
+    return "default";
+  };
+
+  const getActionTitle = (type: string) => {
+    switch (type) {
+      case 'ban':
+        return 'Utestengt';
+      case 'suspend':
+        return 'Suspendert';
+      case 'warn':
+        return 'Advarsel';
+      default:
+        return 'Handling';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0 md:pl-20">
       <Navigation />
       
       <main className="container max-w-4xl mx-auto px-4 py-6">
+        {/* User Actions Alerts */}
+        {userActions.length > 0 && (
+          <div className="mb-6 space-y-3">
+            {userActions.map((action) => (
+              <Alert key={action.id} variant={getActionVariant(action.action_type)}>
+                <div className="flex items-start gap-3">
+                  {getActionIcon(action.action_type)}
+                  <div className="flex-1">
+                    <AlertTitle className="flex items-center gap-2">
+                      {getActionTitle(action.action_type)}
+                      {action.duration_days && (
+                        <Badge variant="outline" className="text-xs">
+                          {action.duration_days} dager
+                        </Badge>
+                      )}
+                    </AlertTitle>
+                    <AlertDescription className="mt-2">
+                      {action.reason}
+                    </AlertDescription>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {new Date(action.created_at).toLocaleDateString('nb-NO', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </Alert>
+            ))}
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-6">
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
