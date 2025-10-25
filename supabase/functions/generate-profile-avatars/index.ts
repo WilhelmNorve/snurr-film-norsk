@@ -40,8 +40,8 @@ serve(async (req) => {
       try {
         // Create a descriptive prompt based on the user's profile
         const prompt = `Professional portrait photo of a person named ${profile.display_name || profile.username}. ${
-          profile.bio ? `Description: ${profile.bio}.` : ''
-        } High quality, well-lit, friendly expression, neutral background. Realistic style.`
+          profile.bio ? `Profile: ${profile.bio}.` : ''
+        } Studio quality portrait with neutral beige background, natural lighting, friendly warm smile, casual clothing, shoulders and head visible. Photorealistic style with soft focus background, sharp facial features. High resolution professional headshot.`
 
         console.log(`Generating image for ${profile.username} with prompt: ${prompt}`)
 
