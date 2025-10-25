@@ -1,16 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
-import { Upload as UploadIcon, Video, Image as ImageIcon } from "lucide-react";
+import { Upload as UploadIcon, Video, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Upload = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [caption, setCaption] = useState("");
-  const [hashtags, setHashtags] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,15 +28,62 @@ const Upload = () => {
     }
   };
 
-  const handleUpload = () => {
-    if (!videoFile) {
+  const handleUpload = async () => {
+    if (!videoFile || !user) {
       toast.error("Vennligst velg en video først");
       return;
     }
 
-    // In production, this would upload to the API
-    toast.success("Video lastes opp...");
-    console.log("Uploading:", { videoFile, caption, hashtags });
+    if (!title.trim()) {
+      toast.error("Vennligst legg til en tittel");
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload video to storage
+      const fileExt = videoFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError, data } = await supabase.storage
+        .from('videos')
+        .upload(fileName, videoFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('videos')
+        .getPublicUrl(fileName);
+
+      // Create video record in database
+      const { error: dbError } = await supabase
+        .from('videos')
+        .insert({
+          user_id: user.id,
+          title: title.trim(),
+          description: description.trim() || null,
+          video_url: publicUrl,
+          duration: 0, // You can add video duration detection later
+        });
+
+      if (dbError) throw dbError;
+
+      toast.success("Video publisert!");
+      setVideoFile(null);
+      setTitle("");
+      setDescription("");
+      navigate("/profile");
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error("Kunne ikke laste opp video. Prøv igjen.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -81,25 +134,27 @@ const Upload = () => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Beskrivelse
+                  Tittel *
                 </label>
-                <Textarea
-                  placeholder="Fortell noe om videoen din..."
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  className="min-h-[100px] bg-secondary border-none"
+                <Input
+                  placeholder="Gi videoen en tittel..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-secondary border-none"
+                  maxLength={100}
                 />
               </div>
 
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Hashtags
+                  Beskrivelse
                 </label>
-                <Input
-                  placeholder="#norge #oslo #travel"
-                  value={hashtags}
-                  onChange={(e) => setHashtags(e.target.value)}
-                  className="bg-secondary border-none"
+                <Textarea
+                  placeholder="Fortell noe om videoen din... Bruk #hashtags"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="min-h-[100px] bg-secondary border-none"
+                  maxLength={500}
                 />
               </div>
             </div>
@@ -111,18 +166,26 @@ const Upload = () => {
               className="flex-1"
               onClick={() => {
                 setVideoFile(null);
-                setCaption("");
-                setHashtags("");
+                setTitle("");
+                setDescription("");
               }}
+              disabled={isUploading}
             >
               Avbryt
             </Button>
             <Button
               className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
               onClick={handleUpload}
-              disabled={!videoFile}
+              disabled={!videoFile || isUploading}
             >
-              Publiser
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Laster opp...
+                </>
+              ) : (
+                "Publiser"
+              )}
             </Button>
           </div>
         </div>
