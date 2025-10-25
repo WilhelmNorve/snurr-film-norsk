@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { Send, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -28,13 +28,13 @@ interface Comment {
 }
 
 interface CommentsSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   videoId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  commentsCount: number;
+  onCommentAdded?: () => void;
 }
 
-export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: CommentsSheetProps) => {
+export const CommentsSheet = ({ open, onOpenChange, videoId, onCommentAdded }: CommentsSheetProps) => {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -42,10 +42,10 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && videoId) {
+    if (open && videoId) {
       fetchComments();
     }
-  }, [isOpen, videoId]);
+  }, [open, videoId]);
 
   const fetchComments = async () => {
     setIsLoading(true);
@@ -59,11 +59,11 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
           user_id
         `)
         .eq('video_id', videoId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false});
 
       if (error) throw error;
 
-      // Fetch profiles separately
+      // Fetch user profiles separately
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(c => c.user_id))];
         const { data: profilesData } = await supabase
@@ -71,14 +71,16 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
           .select('id, username, avatar_url')
           .in('id', userIds);
 
-        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
-        
-        const commentsWithProfiles = data.map(comment => ({
+        const profilesMap = new Map(
+          profilesData?.map(p => [p.id, p]) || []
+        );
+
+        const enrichedComments = data.map(comment => ({
           ...comment,
           profiles: profilesMap.get(comment.user_id) || { username: 'unknown', avatar_url: null }
         }));
 
-        setComments(commentsWithProfiles);
+        setComments(enrichedComments as Comment[]);
       } else {
         setComments([]);
       }
@@ -113,55 +115,64 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
 
       if (error) throw error;
 
-      setNewComment("");
       toast.success("Kommentar lagt til!");
-      await fetchComments();
+      setNewComment("");
+      fetchComments();
+      onCommentAdded?.();
     } catch (error) {
-      console.error('Error submitting comment:', error);
+      console.error('Error adding comment:', error);
       toast.error("Kunne ikke legge til kommentar");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleDelete = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      toast.success("Kommentar slettet");
+      fetchComments();
+      onCommentAdded?.();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error("Kunne ikke slette kommentar");
+    }
+  };
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[80vh]">
         <SheetHeader>
-          <SheetTitle>Kommentarer</SheetTitle>
-          <SheetDescription>
-            {commentsCount} {commentsCount === 1 ? 'kommentar' : 'kommentarer'}
-          </SheetDescription>
+          <SheetTitle>Kommentarer ({comments.length})</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col h-[calc(100%-80px)] mt-4">
+        <div className="flex flex-col h-[calc(100%-60px)] mt-4 gap-4">
           <ScrollArea className="flex-1 pr-4">
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center text-muted-foreground py-8">
                 Laster kommentarer...
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Ingen kommentarer ennå. Vær den første!
+              <div className="text-center text-muted-foreground py-8">
+                Ingen kommentarer ennå. Vær den første til å kommentere!
               </div>
             ) : (
               <div className="space-y-4">
                 {comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex-shrink-0 overflow-hidden">
-                      {comment.profiles?.avatar_url ? (
-                        <img
-                          src={comment.profiles.avatar_url}
-                          alt={comment.profiles.username}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center text-xs font-semibold">
-                          {comment.profiles?.username?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarImage src={comment.profiles?.avatar_url || undefined} />
+                      <AvatarFallback>
+                        {comment.profiles?.username?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">
                           @{comment.profiles?.username || 'unknown'}
@@ -172,8 +183,18 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
                             locale: nb,
                           })}
                         </span>
+                        {user?.id === comment.user_id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(comment.id)}
+                            className="ml-auto h-6 w-6 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
-                      <p className="text-sm mt-1">{comment.content}</p>
+                      <p className="text-sm mt-1 break-words">{comment.content}</p>
                     </div>
                   </div>
                 ))}
@@ -181,24 +202,35 @@ export const CommentsSheet = ({ videoId, isOpen, onClose, commentsCount }: Comme
             )}
           </ScrollArea>
 
-          <div className="mt-4 flex gap-2">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Legg til en kommentar..."
-              className="min-h-[60px]"
-              maxLength={500}
-              disabled={isSubmitting}
-            />
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !newComment.trim()}
-              size="icon"
-              className="h-[60px] w-[60px]"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </div>
+          {user ? (
+            <div className="flex gap-2 pb-4">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Skriv en kommentar..."
+                className="min-h-[60px] resize-none"
+                maxLength={500}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }}
+              />
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !newComment.trim()}
+                size="icon"
+                className="h-[60px] w-[60px] flex-shrink-0"
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center text-muted-foreground pb-4">
+              Logg inn for å kommentere
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

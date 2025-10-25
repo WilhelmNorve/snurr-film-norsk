@@ -66,6 +66,7 @@ export const VideoPlayer = ({
   const [reportType, setReportType] = useState<'video' | 'user'>('video');
   const [reportReason, setReportReason] = useState("");
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [localCommentCount, setLocalCommentCount] = useState(comments);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
 
@@ -255,12 +256,18 @@ export const VideoPlayer = ({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setCommentsOpen(true)}
+            onClick={() => {
+              if (videoId) {
+                setCommentsOpen(true);
+              } else {
+                onComment?.();
+              }
+            }}
             className="h-12 w-12 rounded-full hover:scale-110 transition-transform"
           >
             <MessageCircle className="h-7 w-7" />
           </Button>
-          <span className="text-xs font-semibold">{comments.toLocaleString("nb-NO")}</span>
+          <span className="text-xs font-semibold">{localCommentCount.toLocaleString("nb-NO")}</span>
         </div>
 
         <Button
@@ -324,12 +331,14 @@ export const VideoPlayer = ({
       </Dialog>
 
       {/* Comments Sheet */}
-      <CommentsSheet
-        videoId={videoId || ''}
-        isOpen={commentsOpen}
-        onClose={() => setCommentsOpen(false)}
-        commentsCount={comments}
-      />
+      {videoId && (
+        <CommentsSheet
+          open={commentsOpen}
+          onOpenChange={setCommentsOpen}
+          videoId={videoId}
+          onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
+        />
+      )}
     </div>
   );
 };
