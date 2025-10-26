@@ -18,6 +18,8 @@ const Explore = () => {
   const [suggestedVideos, setSuggestedVideos] = useState<any[]>([]);
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+  const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
+  const [hashtagVideos, setHashtagVideos] = useState<any[]>([]);
   const navigate = useNavigate();
 
   const extractHashtags = (text: string): string[] => {
@@ -89,6 +91,22 @@ const Explore = () => {
     fetchSuggestedVideos();
   }, []);
 
+  const handleHashtagClick = async (hashtag: string) => {
+    setSelectedHashtag(hashtag);
+    
+    const { data: videos } = await supabase
+      .from('videos')
+      .select('*')
+      .eq('is_active', true)
+      .or(`title.ilike.%${hashtag}%,description.ilike.%${hashtag}%`)
+      .order('views_count', { ascending: false })
+      .limit(12);
+
+    if (videos) {
+      setHashtagVideos(videos);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0 md:pl-20">
       <Navigation />
@@ -132,7 +150,10 @@ const Explore = () => {
               trendingTopics.map((topic, index) => (
                 <Card
                   key={topic.tag}
-                  className="p-4 bg-card hover:bg-secondary transition-colors cursor-pointer border-border"
+                  onClick={() => handleHashtagClick(topic.tag)}
+                  className={`p-4 hover:bg-secondary transition-colors cursor-pointer border-border ${
+                    selectedHashtag === topic.tag ? 'bg-secondary border-primary' : 'bg-card'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -150,6 +171,43 @@ const Explore = () => {
             )}
           </div>
         </section>
+
+        {selectedHashtag && (
+          <section className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Videoer med {selectedHashtag}</h2>
+              <button 
+                onClick={() => setSelectedHashtag(null)}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Tilbake
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {hashtagVideos.map((video) => (
+                <div
+                  key={video.id}
+                  onClick={() => navigate(`/?video=${video.id}`)}
+                  className="aspect-[9/16] bg-secondary rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform relative group"
+                >
+                  {video.thumbnail_url ? (
+                    <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <video src={video.video_url} className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Play className="h-8 w-8 text-white" />
+                  </div>
+                  <div className="absolute bottom-2 left-2 flex gap-2 text-white text-xs">
+                    <span className="flex items-center gap-1">
+                      <Heart className="h-3 w-3" /> {video.likes_count || 0}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Foreslåtte videoer</h2>
