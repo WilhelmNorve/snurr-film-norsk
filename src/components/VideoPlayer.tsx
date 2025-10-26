@@ -295,27 +295,27 @@ export const VideoPlayer = ({
       )}
 
       {/* Video Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-4 pb-20 md:pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
         <div className="max-w-md">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden">
+            <div className="h-10 w-10 md:h-12 md:w-12 rounded-full border-2 border-white overflow-hidden flex-shrink-0">
               <img 
                 src={avatarUrl}
                 alt={username}
                 className="h-full w-full object-cover object-top"
               />
             </div>
-            <h3 className="font-bold text-lg flex items-center gap-2">
+            <h3 className="font-bold text-base md:text-lg flex items-center gap-1.5 md:gap-2" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' }}>
               @{username}
               <VerificationBadge followersCount={followersCount} size="sm" />
             </h3>
           </div>
-          <p className="text-sm text-foreground/90">{description}</p>
+          <p className="text-sm md:text-base text-white leading-relaxed" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)' }}>{description}</p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-20 right-4 flex flex-col gap-4">
+      <div className="absolute bottom-24 md:bottom-20 right-3 md:right-4 flex flex-col gap-3 md:gap-4">
         <div className="flex flex-col items-center gap-1">
           <Button
             variant="ghost"
