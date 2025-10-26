@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Search, TrendingUp, Play, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ const Explore = () => {
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
   const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
   const [hashtagVideos, setHashtagVideos] = useState<any[]>([]);
+  const hashtagVideosSectionRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const extractHashtags = (text: string): string[] => {
@@ -104,6 +105,14 @@ const Explore = () => {
 
     if (videos) {
       setHashtagVideos(videos);
+      
+      // Scroll to hashtag videos section
+      setTimeout(() => {
+        hashtagVideosSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
     }
   };
 
@@ -173,7 +182,7 @@ const Explore = () => {
         </section>
 
         {selectedHashtag && (
-          <section className="mt-8">
+          <section ref={hashtagVideosSectionRef} className="mt-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Videoer med {selectedHashtag}</h2>
               <button 
