@@ -3,24 +3,75 @@ import { Navigation } from "@/components/Navigation";
 import { Search, TrendingUp, Play, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-const trendingTopics = [
-  { id: "1", tag: "#norge", views: "2.5M visninger" },
-  { id: "2", tag: "#oslo", views: "1.8M visninger" },
-  { id: "3", tag: "#bergen", views: "1.2M visninger" },
-  { id: "4", tag: "#nordlys", views: "980K visninger" },
-  { id: "5", tag: "#matblogg", views: "750K visninger" },
-  { id: "6", tag: "#fotball", views: "650K visninger" },
-];
+interface TrendingTopic {
+  tag: string;
+  views: number;
+  displayViews: string;
+}
 
 const Explore = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedVideos, setSuggestedVideos] = useState<any[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
   const navigate = useNavigate();
 
+  const extractHashtags = (text: string): string[] => {
+    const hashtagRegex = /#[\wæøåÆØÅ]+/g;
+    return text.match(hashtagRegex) || [];
+  };
+
+  const formatViews = (views: number): string => {
+    if (views >= 1000000) {
+      return `${(views / 1000000).toFixed(1)}M visninger`;
+    } else if (views >= 1000) {
+      return `${(views / 1000).toFixed(0)}K visninger`;
+    }
+    return `${views} visninger`;
+  };
+
   useEffect(() => {
+    const fetchTrendingTopics = async () => {
+      setIsLoadingTrending(true);
+      const { data: videos } = await supabase
+        .from('videos')
+        .select('title, description, views_count')
+        .eq('is_active', true);
+
+      if (videos) {
+        const hashtagStats = new Map<string, number>();
+
+        videos.forEach(video => {
+          const hashtags = [
+            ...extractHashtags(video.title || ''),
+            ...extractHashtags(video.description || '')
+          ];
+
+          hashtags.forEach(tag => {
+            const normalizedTag = tag.toLowerCase();
+            const currentViews = hashtagStats.get(normalizedTag) || 0;
+            hashtagStats.set(normalizedTag, currentViews + (video.views_count || 0));
+          });
+        });
+
+        const trending = Array.from(hashtagStats.entries())
+          .map(([tag, views]) => ({
+            tag,
+            views,
+            displayViews: formatViews(views)
+          }))
+          .sort((a, b) => b.views - a.views)
+          .slice(0, 10);
+
+        setTrendingTopics(trending);
+      }
+      setIsLoadingTrending(false);
+    };
+
     const fetchSuggestedVideos = async () => {
       const { data: videos } = await supabase
         .from('videos')
@@ -34,6 +85,7 @@ const Explore = () => {
       }
     };
 
+    fetchTrendingTopics();
     fetchSuggestedVideos();
   }, []);
 
@@ -64,20 +116,38 @@ const Explore = () => {
           </div>
           
           <div className="grid gap-3">
-            {trendingTopics.map((topic) => (
-              <Card
-                key={topic.id}
-                className="p-4 bg-card hover:bg-secondary transition-colors cursor-pointer border-border"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-lg">{topic.tag}</p>
-                    <p className="text-sm text-muted-foreground">{topic.views}</p>
+            {isLoadingTrending ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <Card key={i} className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <Skeleton className="h-5 w-5" />
                   </div>
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
+                </Card>
+              ))
+            ) : trendingTopics.length > 0 ? (
+              trendingTopics.map((topic, index) => (
+                <Card
+                  key={topic.tag}
+                  className="p-4 bg-card hover:bg-secondary transition-colors cursor-pointer border-border"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-lg">{topic.tag}</p>
+                      <p className="text-sm text-muted-foreground">{topic.displayViews}</p>
+                    </div>
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <Card className="p-4">
+                <p className="text-muted-foreground text-center">Ingen trending hashtags ennå</p>
               </Card>
-            ))}
+            )}
           </div>
         </section>
 
